@@ -1,0 +1,16 @@
+{
+  "name": "ce201",
+  "version": "1.0.0",
+  "description": "https://docs.google.com/document/d/1ro3ZIdQum7AUACCruDDOJjYS9QtWDxE35aydLGF_fWk/edit?usp=sharing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss build static/css/styles.css -o static/css/styles.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}
