@@ -1,17 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask App</title>
-    <!-- Link the compiled Tailwind CSS file -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="path/to/your/compiled-tailwind.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/main.css">
 </head>
-<body class="bg-gray-100">
-    <!-- Use Tailwind CSS classes in your HTML content -->
-    <h1 class="text-3xl font-bold text-blue-500">Welcome to the Flask App!</h1>
-    <p class="text-gray-700">This is a test HTML page rendered by Flask.</p>
+<body>
+  <div class="container">
+    <div class="bg-red-50">
+      <a href="/">index.html</a><a href="/about">about.html</a>
+      <span class="container bg-teal-400"><a href="/">Home</a></span>
+    </div>
+  </div>
 </body>
 </html>
