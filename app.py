@@ -19,7 +19,7 @@ def user():
 
 # SELECT ONE USER
 @app.route('/user/update/<int:user_id>', methods=['GET'])
-def update(user_id):
+def user_update_view(user_id):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM User WHERE id = ?', (user_id,))
@@ -29,7 +29,7 @@ def update(user_id):
 
 # INSERT USER
 @app.route('/user/insert', methods=['POST'])
-def insert():
+def user_insert():
     if request.method == 'POST':
         name = request.form['name']
         conn = sqlite3.connect('database.db')
@@ -41,7 +41,7 @@ def insert():
 
 # DELETE USER
 @app.route('/delete/<int:user_id>', methods=['POST'])
-def delete(user_id):
+def user_delete(user_id):
     if request.method == 'POST':
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
@@ -52,7 +52,7 @@ def delete(user_id):
 
 # UPDATE USER
 @app.route('/user/update_user/<int:user_id>', methods=['POST'])
-def update_user(user_id):
+def user_update(user_id):
     new_name = request.form.get('new_name')
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
