@@ -1,1 +1,19 @@
-<!-- UPDATE view here -->
+{% include 'Shared/navigation.html' %}
+<div class="container mx-auto p-4">
+  <div class="bg-white p-8 rounded-md shadow-md">
+    <p class="text-lg font-semibold mb-4">User Details:</p>
+    <ul>
+      <li><strong>Name:</strong> {{ user[1] }}</li>
+    </ul>
+
+    <form method="post" action="{{ url_for('update_user', user_id=user[0]) }}" class="mt-6">
+      <label for="new_name" class="block text-sm font-medium text-gray-700">New Name:</label>
+      <input type="text" id="new_name" name="new_name" required
+             class="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-500 block w-full">
+
+      <button type="submit" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">
+        Update Name
+      </button>
+    </form>
+  </div>
+</div>
