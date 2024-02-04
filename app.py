@@ -1,12 +1,60 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = 'secret_key'
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+# Database connection 
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    return conn
+
+# User Registration Route
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']  
+        hashed_password = generate_password_hash(password)
+        conn = get_db_connection()
+        conn.execute('INSERT INTO User (name, password_hash, role) VALUES (?, ?, ?)', (username, hashed_password, role))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('login'))
+    return render_template('Auth/register.html')
+
+# User Login Route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM User WHERE name = ?', (username,)).fetchone()
+        conn.close()
+        if user and check_password_hash(user[3], password):
+            session['user_id'] = user[0]
+            session['user_role'] = user[2]
+            return redirect(url_for('index'))
+        else:
+            error = 'Wrong username or password'
+    return render_template('Auth/login.html',error=error)
+
+# User Logout Route
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('user_role', None)
+    return redirect(url_for('login'))
+
+'''
 #### USER ####
 
 # SELECT ALL USER
@@ -61,6 +109,7 @@ def user_update(user_id):
         cursor.execute('UPDATE User SET name = ? WHERE id = ?', (new_name, user_id))
         conn.commit()
     return redirect(url_for('user'))
+'''
 
 #### COURSES ####
 
