@@ -9,6 +9,14 @@ conn.execute('''
         name TEXT
     )
 ''')
-print("Created table successfully!")
+print("Created User successfully!")
+
+conn.execute('''
+    CREATE TABLE Courses (
+        id INTEGER PRIMARY KEY,
+        name TEXT
+    )
+''')
+print("Created Courses successfully!")
 
 conn.close()

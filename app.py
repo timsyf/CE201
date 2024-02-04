@@ -7,6 +7,8 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+#### USER ####
+
 # SELECT ALL USER
 @app.route('/user', methods=['GET'])
 def user():
@@ -59,3 +61,58 @@ def user_update(user_id):
         cursor.execute('UPDATE User SET name = ? WHERE id = ?', (new_name, user_id))
         conn.commit()
     return redirect(url_for('user'))
+
+#### COURSES ####
+
+# INSERT Courses
+@app.route('/courses/insert', methods=['POST'])
+def courses_insert():
+    if request.method == 'POST':
+        name = request.form['name']
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO Courses (name) VALUES (?)', (name,))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('courses'))
+
+# SELECT ALL courses
+@app.route('/courses', methods=['GET'])
+def courses():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Courses')
+    courses = cursor.fetchall()
+    conn.close()
+    return render_template('Courses/courses.html', courses=courses)
+
+# SELECT ONE course
+@app.route('/courses/update/<int:courses_id>', methods=['GET'])
+def courses_update_view(courses_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Courses WHERE id = ?', (courses_id,))
+    courses = cursor.fetchone()
+    conn.close()
+    return render_template('Courses/coursesupdate.html', courses=courses)
+
+# DELETE Course
+@app.route('/courses/delete/<int:courses_id>', methods=['POST'])
+def courses_delete(courses_id):
+    if request.method == 'POST':
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM Courses WHERE id = ?', (courses_id,))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('courses'))
+
+# UPDATE course
+@app.route('/courses/update_courses/<int:courses_id>', methods=['POST'])
+def courses_update(courses_id):
+    new_name = request.form.get('new_name')
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE Courses SET name = ? WHERE id = ?', (new_name, courses_id))
+        conn.commit()
+    return redirect(url_for('courses'))
