@@ -41,4 +41,13 @@ conn.execute('''
 ''')
 print("Created UserCourses successfully!")
 
+conn.execute('''
+    CREATE TABLE Graph (
+    Category TEXT,
+    Value INTEGER
+    )
+''')
+print("Created Graph successfully!")
+
+
 conn.close()
