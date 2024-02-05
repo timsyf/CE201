@@ -14,7 +14,10 @@ print("Created User successfully!")
 conn.execute('''
     CREATE TABLE Courses (
         id INTEGER PRIMARY KEY,
-        name TEXT
+        name TEXT,
+        start_date DATE,
+        duration INTEGER,
+        course_type TEXT
     )
 ''')
 print("Created Courses successfully!")
