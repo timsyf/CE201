@@ -27,4 +27,18 @@ conn.execute('''
 ''')
 print("Created Courses successfully!")
 
+conn.execute('''
+    CREATE TABLE UserCourses  (
+       id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        name TEXT,
+        duration INTEGER,
+        course_id INTEGER,
+        course_type TEXT,
+        FOREIGN KEY (user_id) REFERENCES User (id),
+        FOREIGN KEY (course_id) REFERENCES Courses (id)
+    )
+''')
+print("Created UserCourses successfully!")
+
 conn.close()

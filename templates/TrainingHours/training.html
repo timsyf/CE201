@@ -1,0 +1,49 @@
+{% include 'Shared/navigation.html' %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-4">Applied Courses</h1>
+
+
+
+    <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Name</th>
+                <th class="py-2 px-4 border-b">Description</th>
+                <th class="py-2 px-4 border-b">Duration(Hours)</th>
+                <th class="py-2 px-4 border-b">Instructor</th>
+                <th class="py-2 px-4 border-b">Start Date</th>
+                <th class="py-2 px-4 border-b">Course Type</th>
+                <th class="py-2 px-4 border-b">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in applied_courses %}
+                <tr>
+                    <td class="py-2 px-4 border-b">{{ course[1] }}</td>
+                    <td class="py-2 px-4 border-b">{{ course[2] }}</td>
+                    <td class="py-2 px-4 border-b">{{ course[3] }}</td>
+                    <td class="py-2 px-4 border-b">{{ course[4] }}</td>
+                    <td class="py-2 px-4 border-b">{{ course[5] }}</td>
+                    <td class="py-2 px-4 border-b">{{ course[6] }}</td>
+
+                    <td class="py-2 px-4 border-b">
+                        <div class="py-2 px-4">
+                            <!-- delete button -->
+                            <form action="{{ url_for('delete_applied_course', course_id=course[0]) }}" method="post">
+                                <button type="submit" class="text-red-500 hover:text-red-700 focus:outline-none mr-2">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+          
+        </tbody>
+    </table>
+    <div class="mt-4">
+      <p class="text-lg font-semibold">Total Duration - Core Courses: {{ total_duration_core }} Hours</p>
+      <p class="text-lg font-semibold">Total Duration - Soft Courses: {{ total_duration_soft }} Hours</p>
+
+  </div>  
+</div>

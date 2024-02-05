@@ -15,7 +15,7 @@
             {% if 'user_id' in session %}
                 {% if session['user_role'] == 'staff' %}
                 <li><a href="" class="text-white hover:text-gray-300">Profile</a></li>
-                <li><a href="" class="text-white hover:text-gray-300">Training Hours</a></li>
+                <li><a href="/traininghours" class="text-white hover:text-gray-300">Training Hours</a></li>
                 <li><a href="/courses" class="text-white hover:text-gray-300">Courses</a></li>
                 {% elif session['user_role'] == 'hr_supervisor' %}
                 <li><a href="" class="text-white hover:text-gray-300">Departments</a></li>

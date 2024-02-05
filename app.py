@@ -142,12 +142,16 @@ def courses_insert():
 # SELECT ALL courses
 @app.route('/courses', methods=['GET'])
 def courses():
+    user_id = session.get('user_id')
+  
+    applied_course_id = get_applied_course_id(user_id)
+    print(applied_course_id)
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM Courses')
     courses = cursor.fetchall()
     conn.close()
-    return render_template('Courses/courses.html', courses=courses)
+    return render_template('Courses/courses.html', courses=courses,applied_course_id=applied_course_id)
 
 # SELECT ONE course
 @app.route('/courses/update/<int:courses_id>', methods=['GET'])
@@ -179,3 +183,140 @@ def courses_update(courses_id):
         cursor.execute('UPDATE Courses SET name = ? WHERE id = ?', (new_name, courses_id))
         conn.commit()
     return redirect(url_for('courses'))
+
+# Apply course
+@app.route('/apply_course/<int:courses_id>', methods=['POST'])
+def apply_course(courses_id):
+    if request.method == 'POST':
+        user_id = session.get('user_id')
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO UserCourses (user_id, course_id) VALUES (?, ?)', (user_id, courses_id))
+        conn.commit()
+        conn.close()
+
+  
+    #applied_courses = get_applied_courses(user_id)  
+    applied_courses_data = get_applied_courses(user_id)
+
+    total_duration_core = 0
+    total_duration_soft = 0
+    
+    for course in applied_courses_data:
+       
+        if course[6] == 'Core':
+            total_duration_core += course[3]
+            
+        elif course[6] == 'Soft':
+            total_duration_soft += course[3]
+    
+
+    return render_template('TrainingHours/training.html', applied_courses=applied_courses_data, total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
+    
+    
+    #return render_template('TrainingHours/training.html', applied_courses=applied_courses)
+
+#Get applied course
+def get_applied_courses(user_id):
+    user_id = session.get('user_id')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Assuming your UserCourses table has a column named 'course_id' for the course ID
+    cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = ?', (user_id,))
+    
+    # Fetch all the results and create a list of course IDs
+    applied_courses_ids = cursor.fetchall()
+    
+    # Now, let's retrieve the course details for the applied course IDs
+    applied_courses = []
+    
+    for course_id in applied_courses_ids:
+        cursor.execute('SELECT * FROM Courses WHERE id = ?', (course_id[0],))
+        course_details = cursor.fetchone()
+        applied_courses.append(course_details)
+
+    conn.close()
+    return applied_courses
+
+# Get applied course IDs for a user
+def get_applied_course_id(user_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Assuming there's a UserCourses table with columns 'user_id' and 'course_id'
+    cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = ?', (user_id,))
+    
+    applied_course_id = [course_id[0] for course_id in cursor.fetchall()]
+
+    conn.close()
+    return applied_course_id
+
+@app.route('/delete_applied_course/<int:course_id>', methods=['POST'])
+def delete_applied_course(course_id):
+    # Add logic to delete the course from the UserCourses table
+    user_id = session.get('user_id')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM UserCourses WHERE user_id = ? AND course_id = ?', (user_id, course_id))
+    conn.commit()
+    conn.close()
+
+    # Refresh the applied courses list
+    applied_courses = get_applied_courses(user_id)
+    applied_courses_data = get_applied_courses(user_id)
+
+    total_duration_core = 0
+    total_duration_soft = 0
+    
+    for course in applied_courses_data:
+       
+        if course[6] == 'Core':
+            total_duration_core += course[3]
+            
+        elif course[6] == 'Soft':
+            total_duration_soft += course[3]
+    return render_template('TrainingHours/training.html', applied_courses=applied_courses,total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
+
+@app.route('/traininghours', methods=['GET'])
+def training_hours():
+    user_id = session.get('user_id')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Assuming your UserCourses table has a column named 'course_id' for the course ID
+    cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = ?', (user_id,))
+    
+    # Fetch all the results and create a list of course IDs
+    applied_courses_ids = cursor.fetchall()
+    
+    # Now, let's retrieve the course details for the applied course IDs
+    applied_courses = []
+    
+    for course_id in applied_courses_ids:
+        cursor.execute('SELECT * FROM Courses WHERE id = ?', (course_id[0],))
+        course_details = cursor.fetchone()
+        applied_courses.append(course_details)
+
+    conn.close()
+    applied_courses_data = get_applied_courses(user_id)
+
+    total_duration_core = 0
+    total_duration_soft = 0
+    
+    for course in applied_courses_data:
+       
+        if course[6] == 'Core':
+            total_duration_core += course[3]
+            
+        elif course[6] == 'Soft':
+            total_duration_soft += course[3]
+    return render_template('TrainingHours/training.html',applied_courses= applied_courses,total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
+
+
+   
+
+    
+
+
+
