@@ -1,11 +1,36 @@
 {% include 'Shared/navigation.html' %}
 <div class="container mx-auto p-4">
+  <h2 class="text-2xl font-bold mb-4">Add a Course</h2>
   <div class="bg-white p-8 rounded-md shadow-md">
-    <form action="/courses/insert" method="post" class="flex items-center">
-      <label for="name" class="mr-2">Name:</label>
-      <input type="text" id="name" name="name" required class="border rounded-md p-2">
-      <button type="submit" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded-md">Add Courses</button>
+    <form action="/courses/insert" method="post" class="flex flex-col">
+      <label for="name" class="mb-2">Name:</label>
+      <input type="text" id="name" name="name" required class="border rounded-md p-2 mb-2">
+      
+      <label for="course_type" class="mb-2">Course Type:</label>
+      <select name="course_type" id="course_type" required class="border rounded-md p-2 mb-2">
+        <option value="Core">Core Skill</option>
+        <option value="Soft">Soft Skill</option>
+        </select>
+
+      <label for="duration" class="mb-2">Course Duration(Hours):</label>
+      <input type="number" id="duration" name="duration" required class="border rounded-md p-2 mb-2">
+      
+      <label for="start_date" class="mb-2">Start Date:</label>
+      <input type="date" id="start_date" name="start_date" required class="border rounded-md p-2 mb-2">
+      
+      <label for="instructor" class="mb-2">Instructor:</label>
+      <input type="text" id="instructor" name="instructor" required class="border rounded-md p-2 mb-2">
+      
+      <label for="description" class="mb-2">Description:</label>
+      <input type="text" id="description" name="description" required class="border rounded-md p-2 mb-2">
+      
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2">Add Courses</button>
     </form>
+  </div>
+</div>
+
+
+
 
     {% block content %}
     <div class="container mx-auto mt-8">
@@ -15,6 +40,11 @@
         <thead>
           <tr>
             <th class="py-2 px-4 border-b">Name</th>
+            <th class="py-2 px-4 border-b">DescriptionDuration</th>
+            <th class="py-2 px-4 border-b">Duration(Hours)</th>
+            <th class="py-2 px-4 border-b">Instructor</th>
+            <th class="py-2 px-4 border-b">Start Date</th>
+            <th class="py-2 px-4 border-b">Course Type</th>
             <th class="py-2 px-4 border-b">Actions</th>
           </tr>
         </thead>
@@ -22,6 +52,12 @@
           {% for course in courses %}
           <tr>
             <td class="py-2 px-4 border-b">{{ course[1] }}</td>
+            <td class="py-2 px-4 border-b">{{ course[2] }}</td>
+            <td class="py-2 px-4 border-b">{{ course[3] }}</td>
+            <td class="py-2 px-4 border-b">{{ course[4] }}</td>
+            <td class="py-2 px-4 border-b">{{ course[5] }}</td>
+            <td class="py-2 px-4 border-b">{{ course[6] }}</td>
+            
             <td class="py-2 px-4 border-b">
               <div class="py-2 px-4">
                 <form action="{{ url_for('courses_delete', courses_id=course[0]) }}" method="post"

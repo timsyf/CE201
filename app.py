@@ -118,12 +118,26 @@ def user_update(user_id):
 def courses_insert():
     if request.method == 'POST':
         name = request.form['name']
+        course_type = request.form['course_type']
+        duration = request.form['duration']
+        start_date = request.form['start_date']
+        instructor = request.form['instructor']
+        description = request.form['description']
+
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO Courses (name) VALUES (?)', (name,))
+
+        # Use a single INSERT statement with multiple columns
+        cursor.execute('''
+            INSERT INTO Courses (name, course_type, duration, start_date, instructor, description)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (name, course_type, duration, start_date, instructor, description))
+
         conn.commit()
         conn.close()
+
     return redirect(url_for('courses'))
+
 
 # SELECT ALL courses
 @app.route('/courses', methods=['GET'])

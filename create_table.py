@@ -8,7 +8,8 @@ conn.execute('''
         id INTEGER PRIMARY KEY,
         name TEXT,
         role TEXT,
-        password_hash TEXT
+        password_hash TEXT,
+        duration INTEGER
     )
 ''')
 print("Created User successfully!")
@@ -16,7 +17,12 @@ print("Created User successfully!")
 conn.execute('''
     CREATE TABLE Courses (
         id INTEGER PRIMARY KEY,
-        name TEXT
+        name TEXT,
+        description TEXT,
+        duration INTEGER,
+        instructor TEXT,
+        start_date DATE,
+        course_type TEXT
     )
 ''')
 print("Created Courses successfully!")
