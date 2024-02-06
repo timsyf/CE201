@@ -2,12 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
+import pandas as pd
+import plotly.express as px
+
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    line_graph_html = create_line_graph()
+    pie_graph_html = create_pie_graph()
+    return render_template("index.html", line_graph_html=line_graph_html, pie_graph_html=pie_graph_html)
 
 # Database connection 
 def get_db_connection():
@@ -313,10 +318,21 @@ def training_hours():
             total_duration_soft += course[3]
     return render_template('TrainingHours/training.html',applied_courses= applied_courses,total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
 
+#### GRAPHS ####
+def create_line_graph():
+    conn = sqlite3.connect('database.db')
+    query = "SELECT Category, Value FROM Graph"
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    fig = px.bar(df, x='Category', y='Value', title='Line Graph')
+    graph_html = fig.to_html(full_html=False)
+    return graph_html
 
-   
-
-    
-
-
-
+def create_pie_graph():
+    conn = sqlite3.connect('database.db')
+    query = "SELECT Category, Value FROM Graph"
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    fig = px.pie(df, names='Category', values='Value', title='Pie Graph')
+    graph_html = fig.to_html(full_html=False)
+    return graph_html

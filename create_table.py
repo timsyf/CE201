@@ -49,5 +49,4 @@ conn.execute('''
 ''')
 print("Created Graph successfully!")
 
-
 conn.close()
