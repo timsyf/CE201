@@ -59,6 +59,24 @@ def logout():
     session.pop('user_role', None)
     return redirect(url_for('login'))
 
+#Profile Route
+@app.route('/profile')
+def profile():
+    if 'user_id' in session:  
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT name, role FROM User WHERE id = ?', (session['user_id'],))
+        user_data = cursor.fetchone()
+        conn.close()
+
+        if user_data:
+            return render_template('User/profile.html', username=user_data[0], role=user_data[1])
+        else:
+            return 'User not found', 404
+    else:
+        return redirect(url_for('login')) 
+    
 '''
 #### USER ####
 
@@ -227,13 +245,12 @@ def get_applied_courses(user_id):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Assuming your UserCourses table has a column named 'course_id' for the course ID
     cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = ?', (user_id,))
     
     # Fetch all the results and create a list of course IDs
     applied_courses_ids = cursor.fetchall()
     
-    # Now, let's retrieve the course details for the applied course IDs
+    # Retrieve the course details for the applied course IDs
     applied_courses = []
     
     for course_id in applied_courses_ids:
@@ -249,7 +266,6 @@ def get_applied_course_id(user_id):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Assuming there's a UserCourses table with columns 'user_id' and 'course_id'
     cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = ?', (user_id,))
     
     applied_course_id = [course_id[0] for course_id in cursor.fetchall()]
@@ -289,13 +305,12 @@ def training_hours():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Assuming your UserCourses table has a column named 'course_id' for the course ID
     cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = ?', (user_id,))
     
     # Fetch all the results and create a list of course IDs
     applied_courses_ids = cursor.fetchall()
     
-    # Now, let's retrieve the course details for the applied course IDs
+    # Retrieve the course details for the applied course IDs
     applied_courses = []
     
     for course_id in applied_courses_ids:
