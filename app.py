@@ -10,8 +10,8 @@ app.secret_key = 'secret_key'
 
 @app.route("/")
 def index():
-    line_graph_html = create_line_graph()
-    pie_graph_html = create_pie_graph()
+    line_graph_html = create_line_graph_courses()
+    pie_graph_html = create_pie_graph_courses()
     return render_template("index.html", line_graph_html=line_graph_html, pie_graph_html=pie_graph_html)
 
 # Database connection 
@@ -319,20 +319,20 @@ def training_hours():
     return render_template('TrainingHours/training.html',applied_courses= applied_courses,total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
 
 #### GRAPHS ####
-def create_line_graph():
+def create_line_graph_courses():
     conn = sqlite3.connect('database.db')
-    query = "SELECT Category, Value FROM Graph"
+    query = "SELECT course_type, duration FROM Courses"
     df = pd.read_sql_query(query, conn)
     conn.close()
-    fig = px.bar(df, x='Category', y='Value', title='Line Graph')
+    fig = px.bar(df, x='course_type', y='duration', title='Courses Bar Graph')
     graph_html = fig.to_html(full_html=False)
     return graph_html
 
-def create_pie_graph():
+def create_pie_graph_courses():
     conn = sqlite3.connect('database.db')
-    query = "SELECT Category, Value FROM Graph"
+    query = "SELECT course_type, duration FROM Courses"
     df = pd.read_sql_query(query, conn)
     conn.close()
-    fig = px.pie(df, names='Category', values='Value', title='Pie Graph')
+    fig = px.pie(df, names='course_type', values='duration', title='Courses Pie Graph')
     graph_html = fig.to_html(full_html=False)
     return graph_html
