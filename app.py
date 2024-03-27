@@ -23,10 +23,10 @@ def index():
 # Database connection function using environment variables
 def get_db_connection():
     conn = mysql.connector.connect(
-        host='localhost',
-        database='straits',
-        user='root',
-        password='admin'
+        host=os.getenv('DB_SERVER'),
+        database=os.getenv('DB_DATABASE'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD')
     )
     return conn
 
