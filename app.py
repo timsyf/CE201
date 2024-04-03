@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 
@@ -30,16 +30,23 @@ def get_db_connection():
     )
     return conn
 
-# Update the register route
+# User Register Route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-        hashed_password = generate_password_hash(password)
+        #check for duplicate
         conn = get_db_connection()
         cursor = conn.cursor()
+        cursor.execute('SELECT * FROM User WHERE name = %s', (username,))
+        existing_user = cursor.fetchone()
+        if existing_user:
+            flash('Username already exists. Please choose another one.', 'error')
+            return render_template('Auth/register.html')  
+
+        hashed_password = generate_password_hash(password)
         cursor.execute('INSERT INTO User (name, password_hash, role) VALUES (%s, %s, %s)', (username, hashed_password, role))
         conn.commit()
         cursor.close()
@@ -60,13 +67,17 @@ def login():
         user = cursor.fetchone()
         cursor.close()
         conn.close()
-        if user and check_password_hash(user[3], password):
+        
+        if user is None:
+            flash('User does not exist.', 'error')
+        elif not check_password_hash(user[3], password):
+            flash('Wrong password.', 'error')
+        else:
             session['user_id'] = user[0]
             session['user_role'] = user[2]
             return redirect(url_for('index'))
-        else:
-            error = 'Wrong username or password'
-    return render_template('Auth/login.html',error=error)
+        
+    return render_template('Auth/login.html')
 
 # User Logout Route
 @app.route('/logout')
