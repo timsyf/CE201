@@ -1,0 +1,36 @@
+{% include 'Shared/navigation.html' %}
+<div class="container mx-auto mt-8">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative' if category == 'error' else 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative' }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <h1 class="text-2xl font-bold mb-4">Add Department</h1>
+    <div class="bg-white p-8 rounded-md shadow-md">
+        <form action="{{ url_for('add_department') }}" method="POST" class="flex flex-col space-y-4">
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Department Name:</label>
+                <input type="text" id="name" name="name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="default_total_hours" class="block text-gray-700 text-sm font-bold mb-2">Default Total Hours:</label>
+                <input type="number" id="default_total_hours" name="default_total_hours" value="100" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="flex justify-between space-x-4">
+                <div class="mb-4 w-1/2">
+                    <label for="core_skills_percentage" class="block text-gray-700 text-sm font-bold mb-2">Core Skills Percentage:</label>
+                    <input type="number" id="core_skills_percentage" name="core_skills_percentage" value="50" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-4 w-1/2">
+                    <label for="soft_skills_percentage" class="block text-gray-700 text-sm font-bold mb-2">Soft Skills Percentage:</label>
+                    <input type="number" id="soft_skills_percentage" name="soft_skills_percentage" value="50" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Add Department</button>
+        </form>
+    </div>
+</div>

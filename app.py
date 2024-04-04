@@ -104,6 +104,153 @@ def profile():
     else:
         return redirect(url_for('login'))
     
+
+###Departments###
+#View and edit Departments
+@app.route('/departments')
+def departments():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = 'SELECT Department.*, COUNT(User.department_id) AS user_count FROM Department LEFT JOIN User ON Department.id = User.department_id GROUP BY Department.id'
+    cursor.execute(query)
+    departments = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('Departments/departments.html', departments=departments)
+
+#Add Department
+@app.route('/department/add', methods=['GET', 'POST'])
+def add_department():
+    if request.method == 'POST':
+        name = request.form['name']
+        default_total_hours = request.form['default_total_hours']
+        core_skills_percentage = request.form['core_skills_percentage']
+        soft_skills_percentage = request.form['soft_skills_percentage']
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO Department (name, default_total_hours, core_skills_percentage, soft_skills_percentage) VALUES (%s, %s, %s, %s)', (name, default_total_hours, core_skills_percentage, soft_skills_percentage))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        flash('Department added successfully.', 'success')
+        return redirect(url_for('departments'))
+    
+    return render_template('Departments/add_department.html')
+
+#Edit Department
+@app.route('/department/edit/<int:department_id>', methods=['GET', 'POST'])
+def edit_department(department_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        default_total_hours = request.form['default_total_hours']
+        core_skills_percentage = request.form['core_skills_percentage']
+        soft_skills_percentage = request.form['soft_skills_percentage']
+        
+        cursor.execute('UPDATE Department SET name = %s, default_total_hours = %s, core_skills_percentage = %s, soft_skills_percentage = %s WHERE id = %s', (name, default_total_hours, core_skills_percentage, soft_skills_percentage, department_id))
+        conn.commit()
+        flash('Department updated successfully.', 'success')
+        return redirect(url_for('departments'))
+    
+    cursor.execute('SELECT * FROM Department WHERE id = %s', (department_id,))
+    department = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    if department:
+        return render_template('Departments/edit_department.html', department=department)
+    else:
+        flash('Department not found.', 'error')
+        return redirect(url_for('departments'))
+
+#Delete Department
+@app.route('/department/delete/<int:department_id>', methods=['POST'])
+def delete_department(department_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Check if the department exists
+    cursor.execute('SELECT id FROM Department WHERE id = %s', (department_id,))
+    department = cursor.fetchone()
+    if not department:
+        flash('Department does not exist.', 'error')
+        return redirect(url_for('departments'))
+    
+    # Check if there are any users assigned to this department
+    cursor.execute('SELECT id FROM User WHERE department_id = %s', (department_id,))
+    if cursor.fetchone():
+        flash('Cannot delete a department with assigned users. Please reassign or remove users first.', 'error')
+        return redirect(url_for('departments'))
+    
+    # Proceed with deletion since validations passed
+    cursor.execute('DELETE FROM Department WHERE id = %s', (department_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('Department deleted successfully.', 'success')
+    return redirect(url_for('departments'))
+
+#View and Edit Department Users List
+@app.route('/department/users/<int:department_id>')
+def edit_department_users(department_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute('SELECT name FROM Department WHERE id = %s', (department_id,))
+    department = cursor.fetchone()
+
+    cursor.execute('SELECT * FROM User WHERE department_id = %s AND role = %s', (department_id, 'staff',))
+    department_users = cursor.fetchall()
+
+    cursor.execute('SELECT * FROM User WHERE (department_id IS NULL OR department_id = 0) AND role = %s', ('staff',))
+    users_without_department = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('Departments/edit_department_users.html', department_users=department_users, users_without_department=users_without_department, department_id=department_id, department_name=department['name'])
+
+#Add Department User
+@app.route('/department/add_user_to_department', methods=['POST'])
+def add_user_to_department():
+    user_id = request.form.get('user_id')
+    department_id = request.form.get('department_id')
+
+    if not user_id or not department_id:
+        flash('Missing user or department information.', 'error')
+        return redirect(url_for('departments'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE User SET department_id = %s WHERE id = %s', (department_id, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('User added to department successfully.', 'success')
+    return redirect(url_for('edit_department_users', department_id=department_id))
+
+#Remove Department User
+@app.route('/department/remove_user_from_department', methods=['POST'])
+def remove_user_from_department():
+    user_id = request.form.get('user_id')
+    department_id = request.form.get('department_id')  
+    if not user_id:
+        flash('Missing user information.', 'error')
+        return redirect(url_for('departments'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE User SET department_id = NULL WHERE id = %s', (user_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('User removed from department successfully.', 'success')
+    return redirect(url_for('edit_department_users', department_id=department_id))
+
+    
 #### COURSES ####
 
 # INSERT Courses
