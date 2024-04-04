@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS User (
     name TEXT,
     role TEXT,
     password_hash TEXT,
-    duration INT
+    duration INT,
+    department_id INT, -- link to department table
+    FOREIGN KEY (department_id) REFERENCES Department(id)
 );
 
 -- Create Courses table
@@ -41,3 +43,25 @@ CREATE TABLE IF NOT EXISTS Graph (
     Category TEXT,
     Value INTEGER
 );
+
+-- Department table
+CREATE TABLE IF NOT EXISTS Department (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT,
+    default_total_hours INT DEFAULT 100,
+    core_skills_percentage INT DEFAULT 50,
+    soft_skills_percentage INT DEFAULT 50
+);
+
+-- TrainingRequirements table (for user)
+CREATE TABLE IF NOT EXISTS TrainingRequirements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    department_id INT,
+    total_hours INT,
+    core_skills_hours INT,
+    soft_skills_hours INT,
+    FOREIGN KEY (user_id) REFERENCES User(id),
+    FOREIGN KEY (department_id) REFERENCES Department(id)
+);
+
