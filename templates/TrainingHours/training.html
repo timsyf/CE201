@@ -1,49 +1,59 @@
 {% include 'Shared/navigation.html' %}
-<div class="container mx-auto mt-8">
-    <h1 class="text-2xl font-bold mb-4">Applied Courses</h1>
 
+<div class="container mx-auto p-4 h-screen">
+    <div class="h-5/6 overflow-y-auto">
+        <h1 class="text-2xl font-bold mb-4">Applied Courses</h1>
 
-
-    <table class="min-w-full bg-white border border-gray-200">
+        <table class="w-full table-auto mx-auto">
         <thead>
             <tr>
-                <th class="py-2 px-4 border-b">Name</th>
-                <th class="py-2 px-4 border-b">Description</th>
-                <th class="py-2 px-4 border-b">Duration(Hours)</th>
-                <th class="py-2 px-4 border-b">Instructor</th>
-                <th class="py-2 px-4 border-b">Start Date</th>
-                <th class="py-2 px-4 border-b">Course Type</th>
-                <th class="py-2 px-4 border-b">Actions</th>
+                <th class="py-2 px-4 border">Name</th>
+                <th class="py-2 px-4 border">Description</th>
+                <th class="py-2 px-4 border">Duration(Hours)</th>
+                <th class="py-2 px-4 border">Instructor</th>
+                <th class="py-2 px-4 border">Start Date</th>
+                <th class="py-2 px-4 border">Course Type</th>
+                <th class="py-2 px-4 border">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for course in applied_courses %}
                 <tr>
-                    <td class="py-2 px-4 border-b">{{ course[1] }}</td>
-                    <td class="py-2 px-4 border-b">{{ course[2] }}</td>
-                    <td class="py-2 px-4 border-b">{{ course[3] }}</td>
-                    <td class="py-2 px-4 border-b">{{ course[4] }}</td>
-                    <td class="py-2 px-4 border-b">{{ course[5] }}</td>
-                    <td class="py-2 px-4 border-b">{{ course[6] }}</td>
+                    <td class="py-2 px-4 border">{{ course[1] }}</td>
+                    <td class="py-2 px-4 border">{{ course[2] }}</td>
+                    <td class="py-2 px-4 border">{{ course[3] }}</td>
+                    <td class="py-2 px-4 border">{{ course[4] }}</td>
+                    <td class="py-2 px-4 border">{{ course[5] }}</td>
+                    <td class="py-2 px-4 border">{{ course[6] }}</td>
 
-                    <td class="py-2 px-4 border-b">
+                    <td class="py-2 px-4 border">
                         <div class="py-2 px-4">
                             <!-- delete button -->
                             <form action="{{ url_for('delete_applied_course', course_id=course[0]) }}" method="post">
-                                <button type="submit" class="text-red-500 hover:text-red-700 focus:outline-none mr-2">
-                                    Delete
-                                </button>
+                                <div class="flex justify-center">
+                                    <button type="submit" class="inline-block px-4 py-2 border border-red-500 text-sm font-medium rounded-md text-red-500 bg-transparent hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        Delete
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </td>
                 </tr>
             {% endfor %}
-          
-        </tbody>
-    </table>
-    <div class="mt-4">
-      <p class="text-lg font-semibold">Total Duration - Core Courses: {{ total_duration_core }} Hours</p>
-      <p class="text-lg font-semibold">Total Duration - Soft Courses: {{ total_duration_soft }} Hours</p>
-
-  </div>  
+            </tbody>
+        </table>
+        <div class="mt-4 bg-gray-100 rounded-lg p-4 shadow-md">
+            <p class="text-lg font-semibold mb-2">Total Duration</p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-gray-700">Core Courses:</p>
+                    <p class="text-lg font-semibold">{{ total_duration_core }} Hours</p>
+                </div>
+                <div>
+                    <p class="text-gray-700">Soft Courses:</p>
+                    <p class="text-lg font-semibold">{{ total_duration_soft }} Hours</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

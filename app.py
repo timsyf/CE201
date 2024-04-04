@@ -13,13 +13,6 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
-@app.route("/")
-def index():
-    line_graph_html = create_line_graph_courses()
-    pie_graph_html = create_pie_graph_courses()
-    return render_template("index.html", line_graph_html=line_graph_html, pie_graph_html=pie_graph_html)
-    #return render_template("index.html")
-
 # Database connection function using environment variables
 def get_db_connection():
     conn = mysql.connector.connect(
@@ -30,6 +23,11 @@ def get_db_connection():
     )
     return conn
 
+# Dashboard Route
+@app.route('/dashboard')
+def dashboard():
+    return render_template('Pages/dashboard.html')  
+
 # User Register Route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -37,7 +35,6 @@ def register():
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-        #check for duplicate
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM User WHERE name = %s', (username,))
@@ -51,12 +48,12 @@ def register():
         conn.commit()
         cursor.close()
         conn.close()
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))
     return render_template('Auth/register.html')
 
 # User Login Route
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/', methods=['GET', 'POST'])
+def index():
     error = None
     if request.method == 'POST':
         username = request.form['username']
@@ -75,16 +72,23 @@ def login():
         else:
             session['user_id'] = user[0]
             session['user_role'] = user[2]
+            
+        if 'user_id' in session:
+            return redirect(url_for('dashboard'))
+        else:
             return redirect(url_for('index'))
-        
-    return render_template('Auth/login.html')
+    
+    if 'user_id' in session:
+        return render_template('Pages/dashboard.html')
+    else:
+        return render_template('Auth/login.html')
 
 # User Logout Route
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
     session.pop('user_role', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 # Profile Route
 @app.route('/profile')
@@ -102,7 +106,7 @@ def profile():
         else:
             return 'User not found', 404
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))
     
 
 ###Departments###

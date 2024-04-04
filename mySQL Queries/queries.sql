@@ -4,6 +4,15 @@ CREATE DATABASE IF NOT EXISTS STRAITS;
 -- Use the created database
 USE STRAITS;
 
+-- Department table
+CREATE TABLE IF NOT EXISTS Department (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT,
+    default_total_hours INT DEFAULT 100,
+    core_skills_percentage INT DEFAULT 50,
+    soft_skills_percentage INT DEFAULT 50
+);
+
 -- Create User table
 CREATE TABLE IF NOT EXISTS User (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,15 +51,6 @@ CREATE TABLE IF NOT EXISTS UserCourses (
 CREATE TABLE IF NOT EXISTS Graph (
     Category TEXT,
     Value INTEGER
-);
-
--- Department table
-CREATE TABLE IF NOT EXISTS Department (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name TEXT,
-    default_total_hours INT DEFAULT 100,
-    core_skills_percentage INT DEFAULT 50,
-    soft_skills_percentage INT DEFAULT 50
 );
 
 -- TrainingRequirements table (for user)
