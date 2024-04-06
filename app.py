@@ -74,6 +74,7 @@ def index():
         else:
             session['user_id'] = user[0]
             session['user_role'] = user[2]
+            session['user_department'] = user[5]
             
         if 'user_id' in session:
             return redirect(url_for('dashboard'))
@@ -90,6 +91,7 @@ def index():
 def logout():
     session.pop('user_id', None)
     session.pop('user_role', None)
+    session.pop('user_department', None)
     return redirect(url_for('index'))
 
 # Profile Route
@@ -283,6 +285,10 @@ def remove_user_from_department():
 
     
 #### COURSES ####
+# Insert Courses Page
+@app.route('/addcourse', methods=['GET'])
+def render_course_form():
+    return render_template('Courses/addcourse.html')
 
 # INSERT Courses
 @app.route('/courses/insert', methods=['POST'])
@@ -308,6 +314,7 @@ def courses_insert():
         conn.close()
 
     return redirect(url_for('courses'))
+
 
 
 # SELECT ALL courses
@@ -349,9 +356,24 @@ def courses_delete(courses_id):
 @app.route('/courses/update_courses/<int:courses_id>', methods=['POST'])
 def courses_update(courses_id):
     new_name = request.form.get('new_name')
+    new_date = request.form.get('new_date')
+    new_duration = request.form.get('new_duration')
+    new_type= request.form.get('new_type')
+    new_instructor = request.form.get('new_instructor')
+    new_description = request.form.get('new_description')
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE Courses SET name = %s WHERE id = %s', (new_name, courses_id))
+    cursor.execute('''
+    UPDATE Courses 
+    SET name = %s, 
+        start_date = %s, 
+        duration = %s, 
+        course_type = %s, 
+        instructor = %s, 
+        description = %s 
+    WHERE id = %s
+''', (new_name, new_date, new_duration, new_type, new_instructor, new_description, courses_id))
+
     conn.commit()
     conn.close()
     return redirect(url_for('courses'))
@@ -451,10 +473,52 @@ def training_hours():
     cursor = conn.cursor()
 
     cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = %s', (user_id,))
-    
+   
     # Fetch all the results and create a list of course IDs
     applied_courses_ids = cursor.fetchall()
+
+    # Retrieve the applied courses data
+    applied_courses_data = get_applied_courses(user_id)
+
+    #Fetch department Id and the required hours
+    department_id = session.get('user_department')
+    print(department_id)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT default_total_hours, core_skills_percentage, soft_skills_percentage FROM Department WHERE id = %s', (department_id,))
+    department_info = cursor.fetchone()
+
+    if department_info:
+        default_total_hours, core_skills_percentage, soft_skills_percentage = department_info
+
+        total_duration_core = 0
+        total_duration_soft = 0
+        total_required_core = (core_skills_percentage/100) * default_total_hours
+        total_required_soft = (soft_skills_percentage/100) * default_total_hours
+
+        for course in applied_courses_data:
+            if course[6] == 'Core':
+                total_duration_core += course[3]
+            elif course[6] == 'Soft':
+                total_duration_soft += course[3]
+
+        required_core = total_required_core - total_duration_core
+        required_soft = total_required_soft - total_duration_soft 
+    else:
+        # Handle the case where department info is not available
+        required_core = 0
+        required_soft = 0
+        total_duration_core = 0
+        total_duration_soft = 0
+        for course in applied_courses_data:
+            if course[6] == 'Core':
+                total_duration_core += course[3]
+            elif course[6] == 'Soft':
+                total_duration_soft += course[3]
     
+
+
+
     # Retrieve the course details for the applied course IDs
     applied_courses = []
     
@@ -464,18 +528,11 @@ def training_hours():
         applied_courses.append(course_details)
 
     conn.close()
-    applied_courses_data = get_applied_courses(user_id)
 
-    total_duration_core = 0
-    total_duration_soft = 0
-    
-    for course in applied_courses_data:
-        if course[6] == 'Core':
-            total_duration_core += course[3]
-        elif course[6] == 'Soft':
-            total_duration_soft += course[3]
+    return render_template('TrainingHours/training.html', applied_courses=applied_courses, total_duration_core=total_duration_core, total_duration_soft=total_duration_soft, required_core=required_core,
+                       required_soft=required_soft)
 
-    return render_template('TrainingHours/training.html', applied_courses=applied_courses, total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
+
 
 #### GRAPHS ####
 def create_line_graph_courses():

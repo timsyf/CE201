@@ -66,6 +66,12 @@
                             <p class="text-lg font-semibold">{{ total_duration_soft }} Hours</p>
                         </div>
                     </div>
+                    {% if required_soft is defined %}
+                        <p class="mt-4 text-gray-700">You need {{ required_soft }} more hours to meet the required hours of training for Soft Skills.</p>
+                    {% endif %}
+                    {% if required_core is defined %}
+                        <p class="mt-4 text-gray-700">You need {{ required_core }} more hours to meet the required hours of training for Core Skills.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
