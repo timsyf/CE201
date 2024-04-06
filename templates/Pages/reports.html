@@ -24,7 +24,7 @@
                 <div class="relative">
                     <select id="formSelect" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         <option>Select a report</option>
-                        <option value="form1">Form 1</option>
+                        <option value="form1">Staff Information</option>
                         <option value="form2">Form 2</option>
                         <option value="form3">Form 3</option>
                     </select>
@@ -36,11 +36,16 @@
                 </div>
 
                 <div id="form1" class="form-container">
-                    <h2 class="text-lg font-bold mb-4">Form 1</h2>
+                    <h2 class="text-lg font-bold mb-4">Staff Information</h2>
                     <form action="/departmentexport" method="post" class="max-w-md">
                         <div class="mb-4">
                             <label for="userId" class="py-2 block text-sm font-medium text-gray-700">Staff ID</label>
-                            <input type="text" id="userId" name="user_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <select id="user_id" name="user_id" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">Select a user</option>
+                                {% for option in dropdown_options %}
+                                <option value='3'>{{ option.id }} - {{ option.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="flex justify-end">
                             <button type="submit"

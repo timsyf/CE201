@@ -564,7 +564,15 @@ def get_single_staff_department(user_id):
 #### REPORT ####
 @app.route('/reports')
 def reports():
-    return render_template('Pages/reports.html')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM User')
+    users = cursor.fetchall()
+    conn.close()
+    
+    dropdown_options = [{'id': user[0], 'name': user[1]} for user in users]
+    
+    return render_template('Pages/reports.html', dropdown_options=dropdown_options)
 
 @app.route('/departmentexport', methods=['POST'])
 def departmentexport():
