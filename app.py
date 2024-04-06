@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
+from datetime import datetime, timedelta
 
 import pandas as pd
 import plotly.express as px
@@ -26,9 +27,15 @@ def get_db_connection():
 # Dashboard Route
 @app.route('/dashboard')
 def dashboard():
-    line_graph_html = create_line_graph_courses()
-    pie_graph_html = create_pie_graph_courses()
-    return render_template('Pages/dashboard.html', line_graph_html=line_graph_html, pie_graph_html=pie_graph_html)  
+    training_hours_graph = training_hours()
+    get_newest_courses_1_week_graph = get_newest_courses_1_week()
+    get_newest_courses_1_month_graph = get_newest_courses_1_month()
+    get_newest_courses_1_year_graph = get_newest_courses_1_year()
+    return render_template('Pages/dashboard.html', training_hours_graph=training_hours_graph,
+                                                   get_newest_courses_1_week_graph=get_newest_courses_1_week_graph,
+                                                   get_newest_courses_1_month_graph=get_newest_courses_1_month_graph,
+                                                   get_newest_courses_1_year_graph=get_newest_courses_1_year_graph
+    )
 
 # User Register Route
 @app.route('/register', methods=['GET', 'POST'])
@@ -111,32 +118,6 @@ def profile():
             return 'User not found', 404
     else:
         return redirect(url_for('index'))
-    
-@app.route('/departmentexport', methods=['POST'])
-def departmentexport():
-    data = {
-        'ID': [1, 2, 3, 4, 5],
-        'Name': ['Car A', 'Car B', 'Car C', 'Car D', 'Car E'],
-        'Price': [25000, 30000, 35000, 40000, 45000]
-    }
-
-    df = pd.DataFrame(data)
-    excel_file_path = "cars_data.xlsx"
-    df.to_excel(excel_file_path, index=False)
-    return send_file(excel_file_path, as_attachment=True)
-
-@app.route('/userexport', methods=['POST'])
-def userexport():
-    data = {
-        'ID': [1, 2, 3, 4, 5],
-        'Name': ['Car A', 'Car B', 'Car C', 'Car D', 'Car E'],
-        'Price': [25000, 30000, 35000, 40000, 45000]
-    }
-
-    df = pd.DataFrame(data)
-    excel_file_path = "cars_data.xlsx"
-    df.to_excel(excel_file_path, index=False)
-    return send_file(excel_file_path, as_attachment=True)
 
 ###Departments###
 #View and edit Departments
@@ -534,23 +515,124 @@ def training_hours():
 
 
 
-#### GRAPHS ####
-def create_line_graph_courses():
-    user_id = session.get('user_id')
+#### GRAPHS && DASHBOARD ####
+#### FOR STAFF - VIEW OWN TRAINING COURSES ####
+def training_hours():
     conn = get_db_connection()
-    query = "SELECT course_type, duration FROM Courses"
-    df = pd.read_sql(query, conn)
+    query = "SELECT name AS Name, course_type AS CourseType, duration AS Duration FROM UserCourses WHERE user_id = %s"
+    df = pd.read_sql(query, conn, params=(session['user_id'],))
     conn.close()
-    fig = px.bar(df, x='course_type', y='duration', title='Courses Bar Graph')
+    fig = px.bar(df, x='CourseType', y='Duration', color='Name', title='Total duration of courses applied', labels={'Duration': 'Duration (hours)'})
     graph_html = fig.to_html(full_html=False)
     return graph_html
 
-def create_pie_graph_courses():
-    user_id = session.get('user_id')
+def get_newest_courses_1_week():
+    one_week_ago = datetime.now() - timedelta(weeks=1)
     conn = get_db_connection()
-    query = "SELECT course_type, duration FROM Courses"
-    df = pd.read_sql(query, conn)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Courses WHERE start_date >= %s ORDER BY start_date DESC', (one_week_ago,))
+    newest_courses_1_week = cursor.fetchall()
     conn.close()
-    fig = px.pie(df, names='course_type', values='duration', title='Courses Pie Graph')
-    graph_html = fig.to_html(full_html=False)
-    return graph_html
+    return newest_courses_1_week
+
+def get_newest_courses_1_month():
+    one_month_ago = datetime.now() - timedelta(weeks=4)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Courses WHERE start_date >= %s ORDER BY start_date DESC', (one_month_ago,))
+    newest_courses_1_month = cursor.fetchall()
+    conn.close()
+    return newest_courses_1_month
+
+def get_newest_courses_1_year():
+    one_year_ago = datetime.now() - timedelta(days=365)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Courses WHERE start_date >= %s ORDER BY start_date DESC', (one_year_ago,))
+    newest_courses_1_year = cursor.fetchall()
+    conn.close()
+    return newest_courses_1_year
+
+def get_single_staff_department(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM trainingrequirements WHERE user_id = %s', (user_id,))
+    single_staff_department = cursor.fetchall()
+    conn.close()
+    return single_staff_department
+
+#### REPORT ####
+@app.route('/reports')
+def reports():
+    return render_template('Pages/reports.html')
+
+@app.route('/departmentexport', methods=['POST'])
+def departmentexport():
+    user_id = request.form.get('user_id')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    SELECT uc.id AS user_course_id, uc.user_id, uc.name AS user_course_name, uc.duration AS user_course_duration, 
+           uc.course_type AS user_course_type, c.id AS course_id, c.name AS course_name, c.description, c.duration AS course_duration,
+           c.instructor, c.start_date, c.course_type AS course_course_type,
+           u.name AS user_name, u.role, u.duration AS user_duration, u.department_id,
+           d.name AS department_name, d.default_total_hours, d.core_skills_percentage, d.soft_skills_percentage
+    FROM UserCourses uc
+    JOIN Courses c ON uc.course_id = c.id
+    JOIN User u ON uc.user_id = u.id
+    JOIN Department d ON u.department_id = d.id
+    WHERE uc.user_id = %s
+    ''', (user_id,))
+    fetched_data = cursor.fetchall()
+    conn.close()
+
+    formatted_data = {
+        'User ID': [],
+        'User Name': [],
+        'User Role': [],
+        'User Course ID': [],
+        'User Course Name': [],
+        'User Course Duration': [],
+        'User Course Type': [],
+        'Course ID': [],
+        'Course Name': [],
+        'Description': [],
+        'Course Duration': [],
+        'Instructor': [],
+        'Start Date': [],
+        'Course Course Type': [],
+        'User Duration': [],
+        'Department ID': [],
+        'Department Name': [],
+        'Default Total Hours': [],
+        'Core Skills Percentage': [],
+        'Soft Skills Percentage': []
+    }
+
+    for row in fetched_data:
+        formatted_data['User ID'].append(row[1])
+        formatted_data['User Name'].append(row[12])
+        formatted_data['User Role'].append(row[13])
+        formatted_data['User Course ID'].append(row[0])
+        formatted_data['User Course Name'].append(row[2])
+        formatted_data['User Course Duration'].append(row[3])
+        formatted_data['User Course Type'].append(row[4])
+        formatted_data['Course ID'].append(row[5])
+        formatted_data['Course Name'].append(row[6])
+        formatted_data['Description'].append(row[7])
+        formatted_data['Course Duration'].append(row[8])
+        formatted_data['Instructor'].append(row[9])
+        formatted_data['Start Date'].append(row[10])
+        formatted_data['Course Course Type'].append(row[11])
+        formatted_data['User Duration'].append(row[14])
+        formatted_data['Department ID'].append(row[15])
+        formatted_data['Department Name'].append(row[16])
+        formatted_data['Default Total Hours'].append(row[17])
+        formatted_data['Core Skills Percentage'].append(row[18])
+        formatted_data['Soft Skills Percentage'].append(row[19])
+    
+    df = pd.DataFrame(formatted_data)
+    excel_file_path = "STAFF_REPORT.xlsx"
+    df.to_excel(excel_file_path, index=False)
+    return send_file(excel_file_path, as_attachment=True)
