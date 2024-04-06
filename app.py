@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 
@@ -108,6 +108,31 @@ def profile():
     else:
         return redirect(url_for('index'))
     
+@app.route('/departmentexport', methods=['POST'])
+def departmentexport():
+    data = {
+        'ID': [1, 2, 3, 4, 5],
+        'Name': ['Car A', 'Car B', 'Car C', 'Car D', 'Car E'],
+        'Price': [25000, 30000, 35000, 40000, 45000]
+    }
+
+    df = pd.DataFrame(data)
+    excel_file_path = "cars_data.xlsx"
+    df.to_excel(excel_file_path, index=False)
+    return send_file(excel_file_path, as_attachment=True)
+
+@app.route('/userexport', methods=['POST'])
+def userexport():
+    data = {
+        'ID': [1, 2, 3, 4, 5],
+        'Name': ['Car A', 'Car B', 'Car C', 'Car D', 'Car E'],
+        'Price': [25000, 30000, 35000, 40000, 45000]
+    }
+
+    df = pd.DataFrame(data)
+    excel_file_path = "cars_data.xlsx"
+    df.to_excel(excel_file_path, index=False)
+    return send_file(excel_file_path, as_attachment=True)
 
 ###Departments###
 #View and edit Departments

@@ -1,15 +1,28 @@
-{% include 'Shared/navigation.html' %}
-<div class="w-fit">
-    <div class="bg-white p-8 rounded-md shadow-md">
-        <p class="text-lg font-semibold mb-4">Courses Details:</p>
-        <ul>
-            <li><strong>Name:</strong> {{ courses[1] }}</li>
-        </ul>
+<!DOCTYPE html>
+<html lang="en">
 
-        <form method="post" action="{{ url_for('courses_update', courses_id=courses[0]) }}" class="mt-6">
-            <label for="new_name" class="mr-2">New Name:</label>
-            <input type="text" id="new_name" name="new_name" required class="border rounded-md p-2">
-            <button type="submit" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded-md">Update</button>
-        </form>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+</head>
+
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        {% include 'Shared/navigation.html' %}
+        <div class="w-full overflow-x-auto">
+            <div class="w-4/5 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6" style="min-width: 1000px;">
+                <h1 class="text-2xl font-bold mb-4">Courses Details</h1>
+                <form method="post" action="{{ url_for('courses_update', courses_id=courses[0]) }}" class="mt-6">
+                    <label for="Username" class="py-2 block text-sm font-medium text-gray-700">Old Name</label>
+                    <input type="text" id="Username" aria-label="Username" class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ courses[1] }}" disabled>
+                    
+                    <label for="new_name" class="py-2 block text-sm font-medium text-gray-700">New Name</label>
+                    <input type="text" id="new_name" name="new_name" required class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ courses[1] }}">
+                    
+                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md">Update</button>
+                </form>
+            </div>
+        </div>
     </div>
-</div>
