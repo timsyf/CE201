@@ -26,7 +26,9 @@ def get_db_connection():
 # Dashboard Route
 @app.route('/dashboard')
 def dashboard():
-    return render_template('Pages/dashboard.html')  
+    line_graph_html = create_line_graph_courses()
+    pie_graph_html = create_pie_graph_courses()
+    return render_template('Pages/dashboard.html', line_graph_html=line_graph_html, pie_graph_html=pie_graph_html)  
 
 # User Register Route
 @app.route('/register', methods=['GET', 'POST'])
@@ -355,15 +357,19 @@ def courses_update(courses_id):
     return redirect(url_for('courses'))
 
 # Apply course
-@app.route('/apply_course/<int:courses_id>', methods=['POST'])
-def apply_course(courses_id):
+@app.route('/apply_course/<int:courses_id>/<string:name>/<int:duration>/<string:course_type>', methods=['POST'])
+def apply_course(courses_id, name, duration, course_type):
     if request.method == 'POST':
         user_id = session.get('user_id')
+        
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO UserCourses (user_id, course_id) VALUES (%s, %s)', (user_id, courses_id))
+        cursor.execute('INSERT INTO UserCourses (user_id, course_id, name, duration, course_type) VALUES (%s, %s, %s, %s, %s)', (user_id, courses_id, name, duration, course_type))
         conn.commit()
         conn.close()
+
+        flash('Course applied successfully!', 'success')
+        return redirect(url_for('dashboard'))  # Redirect to dashboard or any other appropriate page
   
     applied_courses_data = get_applied_courses(user_id)
 
@@ -473,6 +479,7 @@ def training_hours():
 
 #### GRAPHS ####
 def create_line_graph_courses():
+    user_id = session.get('user_id')
     conn = get_db_connection()
     query = "SELECT course_type, duration FROM Courses"
     df = pd.read_sql(query, conn)
@@ -482,6 +489,7 @@ def create_line_graph_courses():
     return graph_html
 
 def create_pie_graph_courses():
+    user_id = session.get('user_id')
     conn = get_db_connection()
     query = "SELECT course_type, duration FROM Courses"
     df = pd.read_sql(query, conn)
