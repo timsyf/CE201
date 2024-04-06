@@ -1,5 +1,5 @@
 {% if 'user_id' in session %}
-<div id="toggle_nav" style="position: absolute; top: 0; left: 0px;">
+<div id="toggle_nav" style="position: absolute; top: 12px; left: 12px;">
     <img src="https://cdn.vectorstock.com/i/preview-1x/91/81/menu-icon-vector-16849181.jpg" style="width: 40px;border-radius:5px;" alt="Image description">
 </div>
 
@@ -99,7 +99,6 @@
         if (navigation_full.classList.contains('hidden')) {
             navigation_full.classList.remove('hidden');
             button.classList.add('hidden');
-            button.style.left = '260px';
         }
     });
     
@@ -107,7 +106,6 @@
         if (navigation_full.classList.contains('hidden')) {
             navigation_full.classList.remove('hidden');
             button.classList.add('hidden');
-            button.style.left = '260px';
         }
     });
 
@@ -115,7 +113,6 @@
         if (!navigation_full.classList.contains('hidden')) {
             navigation_full.classList.add('hidden');
             button.classList.remove('hidden');
-            button.style.left = '';
         }
     });
 </script>
