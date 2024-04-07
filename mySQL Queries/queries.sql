@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS Department (
     name TEXT,
     default_total_hours INT DEFAULT 100,
     core_skills_percentage INT DEFAULT 50,
-    soft_skills_percentage INT DEFAULT 50
+    soft_skills_percentage INT DEFAULT 50,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create User table
