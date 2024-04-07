@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile</title>
+    <title>Add Department</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
 </head>
 
@@ -13,18 +12,17 @@
         {% include 'Shared/navigation.html' %}
 
         <div class="w-full overflow-x-auto">
-
             {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="w-4/5 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6" style="min-width: 1000px;">
-                    <div class="{{ 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative' if category == 'error' else 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative' }}" role="alert">
-                        {{ message }}
-                    </div>
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="w-4/5 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6" style="min-width: 1000px;">
+                            <div class="{{ 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative' if category == 'error' else 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative' }}" role="alert">
+                                {{ message }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
             <div class="w-4/5 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6" style="min-width: 1000px;">
                 <h1 class="text-2xl font-bold mb-4">Add Department</h1>
@@ -38,21 +36,45 @@
                             <label for="default_total_hours" class="py-2 block text-sm font-medium text-gray-700">Default Total Hours</label>
                             <input type="number" id="default_total_hours" name="default_total_hours" value="100" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         </div>
-                        <div class="flex justify-between space-x-4">
-                            <div class="mb-4 w-1/2">
-                                <label for="core_skills_percentage" class="py-2 block text-sm font-medium text-gray-700">Core Skills Percentage</label>
-                                <input type="number" id="core_skills_percentage" name="core_skills_percentage" value="50" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+
+                        <div class="mb-4">
+                            <label for="skills_slider" class="py-2 block text-sm font-medium text-gray-700">Adjust Skills Balance</label>
+                            <input type="range" id="skills_slider" name="skills_slider" min="0" max="100" value="50" class="slider w-full">
+                            <div class="flex justify-between">
+                                <span id="core_skills_label">50% Core Skills</span>
+                                <span id="soft_skills_label">50% Soft Skills</span>
                             </div>
-                            <div class="mb-4 w-1/2">
-                                <label for="soft_skills_percentage" class="py-2 block text-sm font-medium text-gray-700">Soft Skills Percentage</label>
-                                <input type="number" id="soft_skills_percentage" name="soft_skills_percentage" value="50" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            </div>
+                            <input type="hidden" id="core_skills_percentage" name="core_skills_percentage" value="50">
+                            <input type="hidden" id="soft_skills_percentage" name="soft_skills_percentage" value="50">
                         </div>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Add Department</button>
+                        <div class="flex justify-between">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Add Department</button>
+                            <a href="{{ url_for('departments') }}" class="inline-block align-middle text-center select-none border font-bold whitespace-no-wrap py-2 px-4 rounded text-base leading-normal no-underline text-blue-500 bg-white hover:bg-blue-50">
+                                Back
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        var slider = document.getElementById('skills_slider');
+        var coreSkillsLabel = document.getElementById('core_skills_label');
+        var softSkillsLabel = document.getElementById('soft_skills_label');
+        var coreSkillsInput = document.getElementById('core_skills_percentage');
+        var softSkillsInput = document.getElementById('soft_skills_percentage');
+
+        slider.oninput = function() {
+            var coreSkillsValue = this.value;
+            var softSkillsValue = 100 - coreSkillsValue;
+
+            coreSkillsLabel.textContent = coreSkillsValue + '% Core Skills';
+            softSkillsLabel.textContent = softSkillsValue + '% Soft Skills';
+
+            coreSkillsInput.value = coreSkillsValue;
+            softSkillsInput.value = softSkillsValue;
+        }
+    </script>
 </body>
-</html>

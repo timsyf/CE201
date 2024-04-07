@@ -125,7 +125,16 @@ def profile():
 def departments():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    query = 'SELECT Department.*, COUNT(User.department_id) AS user_count FROM Department LEFT JOIN User ON Department.id = User.department_id GROUP BY Department.id'
+    query = '''
+    SELECT Department.*,
+           COUNT(DISTINCT u.id) AS user_count,
+           (SELECT COUNT(DISTINCT dh.user_id) 
+            FROM DepartmentHR dh
+            WHERE dh.department_id = Department.id) AS hr_officer_count
+    FROM Department
+    LEFT JOIN User AS u ON Department.id = u.department_id AND u.role = "staff"
+    GROUP BY Department.id;
+    '''
     cursor.execute(query)
     departments = cursor.fetchall()
     cursor.close()
@@ -185,21 +194,23 @@ def edit_department(department_id):
 def delete_department(department_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Check if the department exists
+
     cursor.execute('SELECT id FROM Department WHERE id = %s', (department_id,))
     department = cursor.fetchone()
     if not department:
         flash('Department does not exist.', 'error')
         return redirect(url_for('departments'))
     
-    # Check if there are any users assigned to this department
+    cursor.execute('SELECT id FROM DepartmentHR WHERE department_id = %s', (department_id,))
+    if cursor.fetchone():
+        flash('Cannot delete a department with assigned HR officers. Please reassign or remove HR officers first.', 'error')
+        return redirect(url_for('departments'))
+
     cursor.execute('SELECT id FROM User WHERE department_id = %s', (department_id,))
     if cursor.fetchone():
         flash('Cannot delete a department with assigned users. Please reassign or remove users first.', 'error')
         return redirect(url_for('departments'))
     
-    # Proceed with deletion since validations passed
     cursor.execute('DELETE FROM Department WHERE id = %s', (department_id,))
     conn.commit()
     cursor.close()
@@ -264,7 +275,84 @@ def remove_user_from_department():
     flash('User removed from department successfully.', 'success')
     return redirect(url_for('edit_department_users', department_id=department_id))
 
+#View and edit HR officers 
+@app.route('/department/officers/<int:department_id>')
+def department_officers(department_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
     
+    cursor.execute('SELECT name FROM Department WHERE id = %s', (department_id,))
+    department = cursor.fetchone()
+
+    cursor.execute('''
+        SELECT User.* FROM DepartmentHR
+        JOIN User ON DepartmentHR.user_id = User.id
+        WHERE DepartmentHR.department_id = %s AND User.role = "hr_officer"
+    ''', (department_id,))
+    department_officers = cursor.fetchall()
+
+    cursor.execute('''
+        SELECT * FROM User
+        WHERE id NOT IN (
+            SELECT user_id FROM DepartmentHR WHERE department_id = %s
+        ) AND role = "hr_officer"
+    ''', (department_id,))
+    available_officers = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+
+    return render_template('Departments/department_officers.html', 
+                           department_officers=department_officers, 
+                           available_officers=available_officers, 
+                           department_id=department_id, 
+                           department_name=department['name'])
+
+#Add HR officers to department
+@app.route('/department/add_officer_to_department', methods=['POST'])
+def add_officer_to_department():
+    department_id = request.form.get('department_id')
+    user_id = request.form.get('user_id')
+    
+    if not department_id or not user_id:
+        flash('Missing department or HR officer information.', 'error')
+        return redirect(url_for('departments'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('INSERT INTO DepartmentHR (user_id, department_id) VALUES (%s, %s)', (user_id, department_id))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    flash('HR officer added to the department successfully.', 'success')
+    return redirect(url_for('department_officers', department_id=department_id))
+
+#Delete HR officers from Department
+@app.route('/department/remove_officer_from_department', methods=['POST'])
+def remove_officer_from_department():
+    user_id = request.form.get('user_id')
+    department_id = request.form.get('department_id')
+
+    if not user_id or not department_id:
+        flash('Missing HR officer or department information.', 'error')
+        return redirect(url_for('departments'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('DELETE FROM DepartmentHR WHERE user_id = %s AND department_id = %s', (user_id, department_id))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    flash('HR officer removed from the department successfully.', 'success')
+    return redirect(url_for('department_officers', department_id=department_id))
+
+
 #### COURSES ####
 # Insert Courses Page
 @app.route('/addcourse', methods=['GET'])

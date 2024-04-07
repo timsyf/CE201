@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile</title>
+    <title>Edit Department</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
 </head>
 
@@ -41,7 +40,7 @@
                         <div class="flex justify-between space-x-4">
                             <div class="mb-4 w-full">
                                 <label for="skills_slider" class="py-2 block text-sm font-medium text-gray-700">Adjust Skills Balance</label>
-                                <input type="range" id="skills_slider" name="skills_slider" min="0" max="100" value="{{ department.core_skills_percentage }}" class="slider">
+                                <input type="range" id="skills_slider" name="skills_slider" min="0" max="100" value="{{ department.core_skills_percentage }}" class="slider w-full">
                                 <div class="flex justify-between">
                                     <span id="core_skills_label">{{ department.core_skills_percentage }}% Core Skills</span>
                                     <span id="soft_skills_label">{{ department.soft_skills_percentage }}% Soft Skills</span>
@@ -50,7 +49,12 @@
                                 <input type="hidden" id="soft_skills_percentage" name="soft_skills_percentage" value="{{ department.soft_skills_percentage }}">
                             </div>
                         </div>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Update Department</button>
+                        <div class="flex justify-between">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Update Department</button>
+                            <a href="{{ url_for('departments') }}" class="inline-block align-middle text-center select-none border font-bold whitespace-no-wrap py-2 px-4 rounded text-base leading-normal no-underline text-blue-500 bg-white hover:bg-blue-50">
+                                Back 
+                            </a>
+                        </div>
                     </form>
 
                     <script>

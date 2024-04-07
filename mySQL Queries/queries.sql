@@ -21,7 +21,16 @@ CREATE TABLE IF NOT EXISTS User (
     role TEXT,
     password_hash TEXT,
     duration INT,
-    department_id INT, -- link to department table
+    department_id INT, 
+    FOREIGN KEY (department_id) REFERENCES Department(id)
+);
+
+-- Create manytomany rs between HR officers and Departments
+CREATE TABLE IF NOT EXISTS DepartmentHR (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    department_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES User(id),
     FOREIGN KEY (department_id) REFERENCES Department(id)
 );
 
