@@ -566,7 +566,11 @@ def get_single_staff_department(user_id):
 def reports():
     user_reports = get_users_reports()
     department_reports = get_departments_reports()
-    return render_template('Pages/reports.html', dropdown_options_users=user_reports, dropdown_options_departments=department_reports)
+    
+    return render_template('Pages/reports.html',
+                           dropdown_options_users=user_reports,
+                           dropdown_options_departments=department_reports,
+                           )
 
 def get_users_reports():
     conn = get_db_connection()
@@ -659,7 +663,6 @@ def staffexport():
 
 @app.route('/departmentexport', methods=['POST'])
 def departmentexport():
-    department_id = request.form.get('department_id')
     department_year = request.form.get('department_date')
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -667,10 +670,10 @@ def departmentexport():
     sql_query = """
     SELECT id, name, default_total_hours, core_skills_percentage, soft_skills_percentage, created_at 
     FROM Department 
-    WHERE id = %s AND YEAR(created_at) = %s
+    WHERE YEAR(created_at) = %s
     """
 
-    cursor.execute(sql_query, (department_id, department_year))
+    cursor.execute(sql_query, (department_year,))
     
     fetched_data = cursor.fetchall()
 
@@ -695,5 +698,58 @@ def departmentexport():
     
     df = pd.DataFrame(formatted_data)
     excel_file_path = "DEPARTMENT_REPORT.xlsx"
+    df.to_excel(excel_file_path, index=False)
+    return send_file(excel_file_path, as_attachment=True)
+
+@app.route('/completedexport', methods=['POST'])
+def completedexport():
+    department_id = request.form.get('department_id')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    sql_query = """SELECT 
+        u.id AS user_id,
+        u.name AS user_name,
+        u.department_id,
+        COALESCE(SUM(uc.duration), 0) AS total_duration,
+        d.default_total_hours,
+        CASE WHEN COALESCE(SUM(uc.duration), 0) >= d.default_total_hours THEN TRUE ELSE FALSE END AS status
+    FROM 
+        User u
+    LEFT JOIN 
+        UserCourses uc ON u.id = uc.user_id
+    LEFT JOIN 
+        Department d ON u.department_id = d.id
+    WHERE
+        u.department_id = %s
+    GROUP BY 
+        u.id, u.name, u.department_id, d.default_total_hours;
+    """
+    
+    cursor.execute(sql_query, (department_id,))
+    
+    fetched_data = cursor.fetchall()
+
+    conn.close()
+
+    formatted_data = {
+        'User ID': [],
+        'Name': [],
+        'Department ID': [],
+        'Total Duration': [],
+        'Default Total Hours': [],
+        'Status': []
+    }
+
+    for row in fetched_data:
+        formatted_data['User ID'].append(row[0])
+        formatted_data['Name'].append(row[1])
+        formatted_data['Department ID'].append(row[2])
+        formatted_data['Total Duration'].append(row[3])
+        formatted_data['Default Total Hours'].append(row[4])
+        formatted_data['Status'].append(row[5])
+    
+    df = pd.DataFrame(formatted_data)
+    excel_file_path = "COMPLETEDDEPARTMENT_REPORT.xlsx"
     df.to_excel(excel_file_path, index=False)
     return send_file(excel_file_path, as_attachment=True)
