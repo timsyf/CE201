@@ -711,9 +711,16 @@ def completedexport():
         u.id AS user_id,
         u.name AS user_name,
         u.department_id,
+        uc.course_type,
         COALESCE(SUM(uc.duration), 0) AS total_duration,
         d.default_total_hours,
-        CASE WHEN COALESCE(SUM(uc.duration), 0) >= d.default_total_hours THEN TRUE ELSE FALSE END AS status
+        d.core_skills_percentage,
+        d.soft_skills_percentage,
+        CASE 
+            WHEN uc.course_type = 'Core' AND COALESCE(SUM(uc.duration), 0) >= d.default_total_hours * d.core_skills_percentage / 100 THEN TRUE 
+            WHEN uc.course_type = 'Soft' AND COALESCE(SUM(uc.duration), 0) >= d.default_total_hours * d.soft_skills_percentage / 100 THEN TRUE 
+            ELSE FALSE 
+        END AS "Skills requirement met"
     FROM 
         User u
     LEFT JOIN 
@@ -723,7 +730,7 @@ def completedexport():
     WHERE
         u.department_id = %s
     GROUP BY 
-        u.id, u.name, u.department_id, d.default_total_hours;
+        u.id, u.name, u.department_id, uc.course_type, d.default_total_hours, d.core_skills_percentage, d.soft_skills_percentage;
     """
     
     cursor.execute(sql_query, (department_id,))
@@ -736,18 +743,24 @@ def completedexport():
         'User ID': [],
         'Name': [],
         'Department ID': [],
+        'Course Type': [],
         'Total Duration': [],
         'Default Total Hours': [],
-        'Status': []
+        'Core Skills Percentage': [],
+        'Soft Skills Percentage': [],
+        'Skills Requirement Met': []
     }
 
     for row in fetched_data:
         formatted_data['User ID'].append(row[0])
         formatted_data['Name'].append(row[1])
         formatted_data['Department ID'].append(row[2])
-        formatted_data['Total Duration'].append(row[3])
-        formatted_data['Default Total Hours'].append(row[4])
-        formatted_data['Status'].append(row[5])
+        formatted_data['Course Type'].append(row[3])
+        formatted_data['Total Duration'].append(row[4])
+        formatted_data['Default Total Hours'].append(row[5])
+        formatted_data['Core Skills Percentage'].append(row[6])
+        formatted_data['Soft Skills Percentage'].append(row[7])
+        formatted_data['Skills Requirement Met'].append(row[8])
     
     df = pd.DataFrame(formatted_data)
     excel_file_path = "COMPLETEDDEPARTMENT_REPORT.xlsx"
