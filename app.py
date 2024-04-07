@@ -564,18 +564,30 @@ def get_single_staff_department(user_id):
 #### REPORT ####
 @app.route('/reports')
 def reports():
+    user_reports = get_users_reports()
+    department_reports = get_departments_reports()
+    return render_template('Pages/reports.html', dropdown_options_users=user_reports, dropdown_options_departments=department_reports)
+
+def get_users_reports():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM User')
     users = cursor.fetchall()
     conn.close()
-    
     dropdown_options = [{'id': user[0], 'name': user[1]} for user in users]
-    
-    return render_template('Pages/reports.html', dropdown_options=dropdown_options)
+    return dropdown_options
 
-@app.route('/departmentexport', methods=['POST'])
-def departmentexport():
+def get_departments_reports():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Department')
+    departments = cursor.fetchall()
+    conn.close()
+    dropdown_options = [{'id': department[0], 'name': department[1]} for department in departments]
+    return dropdown_options
+
+@app.route('/staffexport', methods=['POST'])
+def staffexport():
     user_id = request.form.get('user_id')
     
     conn = get_db_connection()
@@ -642,5 +654,46 @@ def departmentexport():
     
     df = pd.DataFrame(formatted_data)
     excel_file_path = "STAFF_REPORT.xlsx"
+    df.to_excel(excel_file_path, index=False)
+    return send_file(excel_file_path, as_attachment=True)
+
+@app.route('/departmentexport', methods=['POST'])
+def departmentexport():
+    department_id = request.form.get('department_id')
+    department_year = request.form.get('department_date')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    sql_query = """
+    SELECT id, name, default_total_hours, core_skills_percentage, soft_skills_percentage, created_at 
+    FROM Department 
+    WHERE id = %s AND YEAR(created_at) = %s
+    """
+
+    cursor.execute(sql_query, (department_id, department_year))
+    
+    fetched_data = cursor.fetchall()
+
+    conn.close()
+
+    formatted_data = {
+        'ID': [],
+        'Name': [],
+        'Default Total Hours': [],
+        'Core Skills Percentage': [],
+        'Soft Skills Percentage': [],
+        'Created At': []
+    }
+
+    for row in fetched_data:
+        formatted_data['ID'].append(row[0])
+        formatted_data['Name'].append(row[1])
+        formatted_data['Default Total Hours'].append(row[2])
+        formatted_data['Core Skills Percentage'].append(row[3])
+        formatted_data['Soft Skills Percentage'].append(row[4])
+        formatted_data['Created At'].append(row[5])
+    
+    df = pd.DataFrame(formatted_data)
+    excel_file_path = "DEPARTMENT_REPORT.xlsx"
     df.to_excel(excel_file_path, index=False)
     return send_file(excel_file_path, as_attachment=True)
