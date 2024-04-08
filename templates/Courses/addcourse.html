@@ -5,8 +5,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Course</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
 </head>
+
 
 <body class="bg-gray-100">
     <div class="flex h-screen">
@@ -29,10 +32,14 @@
                 <input type="number" id="duration" name="duration" required class="border rounded-md p-2 mb-4 focus:outline-none focus:ring focus:border-blue-500">
 
                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                <input type="date" id="start_date" name="start_date" required class="border rounded-md p-2 mb-4 focus:outline-none focus:ring focus:border-blue-500">
+                <input type="text" id="start_date" name="start_date" required class="flatpickr-input border rounded-md p-2 mb-4 focus:outline-none focus:ring focus:border-blue-500">
 
                 <label for="instructor" class="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
-                <input type="text" id="instructor" name="instructor" required class="border rounded-md p-2 mb-4 focus:outline-none focus:ring focus:border-blue-500">
+                <select name="instructor">
+                    {% for instructor in instructors %}
+                        <option value="{{ instructor[1] }}">{{ instructor[1] }}</option>
+                    {% endfor %}
+                </select>                
 
                 <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea id="description" name="description" required class="border rounded-md p-2 mb-4 focus:outline-none focus:ring focus:border-blue-500"></textarea>
@@ -43,5 +50,11 @@
           
           
     </div>
+    <script>
+        flatpickr("#start_date", {
+            mode: "multiple",
+            dateFormat: "Y-m-d",
+        });
+    </script>
 </body>
 </html>

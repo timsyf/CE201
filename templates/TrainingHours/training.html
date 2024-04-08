@@ -20,23 +20,23 @@
                 <thead>
                     <tr>
                         <th class="py-2 px-4 border">Name</th>
-                        <th class="py-2 px-4 border">Description</th>
-                        <th class="py-2 px-4 border">Duration(Hours)</th>
-                        <th class="py-2 px-4 border">Instructor</th>
+                        <th class="py-2 px-4 border">Duration(Hours)</th>                        
                         <th class="py-2 px-4 border">Start Date</th>
                         <th class="py-2 px-4 border">Course Type</th>
+                        
+                        <th class="py-2 px-4 border">Attended</th>
                         <th class="py-2 px-4 border w-32">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for course in applied_courses %}
                         <tr>
-                            <td class="py-2 px-4 border">{{ course[1] }}</td>
                             <td class="py-2 px-4 border">{{ course[2] }}</td>
                             <td class="py-2 px-4 border">{{ course[3] }}</td>
-                            <td class="py-2 px-4 border">{{ course[4] }}</td>
+                            <td class="py-2 px-4 border">{{ course[7] }}</td>
                             <td class="py-2 px-4 border">{{ course[5] }}</td>
                             <td class="py-2 px-4 border">{{ course[6] }}</td>
+                            
 
                             <td class="py-2 px-4 border">
                                 <div class="py-2 px-4">
@@ -67,10 +67,10 @@
                         </div>
                     </div>
                     {% if required_soft is defined %}
-                        <p class="mt-4 text-gray-700">You need {{ required_soft }} more hours to meet the required hours of training for Soft Skills.</p>
+                        <p class="mt-4 text-gray-700">You need {{ required_soft }} more hours to meet the required hours of training for Soft Skills if you attend all the applied courses.</p>
                     {% endif %}
                     {% if required_core is defined %}
-                        <p class="mt-4 text-gray-700">You need {{ required_core }} more hours to meet the required hours of training for Core Skills.</p>
+                        <p class="mt-4 text-gray-700">You need {{ required_core }} more hours to meet the required hours of training for Core Skills if you attend all the applied courses.</p>
                     {% endif %}
                 </div>
             </div>

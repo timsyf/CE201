@@ -468,7 +468,12 @@ def remove_officer_from_department():
 # Insert Courses Page
 @app.route('/addcourse', methods=['GET'])
 def render_course_form():
-    return render_template('Courses/addcourse.html')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM User WHERE role = "instructor"')
+    instructors = cursor.fetchall()
+    conn.close()
+    return render_template('Courses/addcourse.html', instructors=instructors)
 
 # INSERT Courses
 @app.route('/courses/insert', methods=['POST'])
@@ -559,8 +564,8 @@ def courses_update(courses_id):
     return redirect(url_for('courses'))
 
 # Apply course
-@app.route('/apply_course/<int:courses_id>/<string:name>/<int:duration>/<string:course_type>', methods=['POST'])
-def apply_course(courses_id, name, duration, course_type):
+@app.route('/apply_course/<int:courses_id>/<string:name>/<int:duration>/<string:course_type>/<string:start_date>', methods=['POST'])
+def apply_course(courses_id, name, duration, course_type, start_date):
     if request.method == 'POST':
         user_id = session.get('user_id')
         
@@ -568,11 +573,21 @@ def apply_course(courses_id, name, duration, course_type):
         cursor = conn.cursor()
         cursor.execute('INSERT INTO UserCourses (user_id, course_id, name, duration, course_type) VALUES (%s, %s, %s, %s, %s)', (user_id, courses_id, name, duration, course_type))
         conn.commit()
+
+         # Fetch the list of saved dates for the user
+        #cursor.execute('SELECT start_date FROM UserCourses WHERE user_id = %s', (user_id,))
+        #saved_dates = [row[0] for row in cursor.fetchall()]
+        date_list = start_date.split(',')
+        date_array=[]
+        for date in date_list:
+            date_array.append(date)
+        
+
         conn.close()
 
         flash('Course applied successfully!', 'success')
-        return redirect(url_for('dashboard'))  # Redirect to dashboard or any other appropriate page
-  
+        return render_template('Courses/applycourse.html', date_array=date_array, courses_id=courses_id)  
+    
     applied_courses_data = get_applied_courses(user_id)
 
     total_duration_core = 0
@@ -587,24 +602,40 @@ def apply_course(courses_id, name, duration, course_type):
             total_duration_soft += course[3]
 
     return render_template('TrainingHours/training.html', applied_courses=applied_courses_data, total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
-    
+
+
+#set the date to the applied course
+@app.route('/apply_course_date/<int:course_id>', methods=['POST'])
+def apply_course_date(course_id):
+    start_dates = request.form.getlist('start_date')
+    string_start_dates = ', '.join(start_dates)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('Update UserCourses SET start_date = %s WHERE course_id = %s', (string_start_dates, course_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('courses'))
+
+
 #Get applied course
 def get_applied_courses(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = %s', (user_id,))
-    
+    #cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = %s', (user_id,))
+    cursor.execute('SELECT * FROM UserCourses WHERE user_id = %s', (user_id,))
     # Fetch all the results and create a list of course IDs
-    applied_courses_ids = cursor.fetchall()
+    applied_courses = cursor.fetchall()
     
     # Retrieve the course details for the applied course IDs
-    applied_courses = []
+    #applied_courses = []
     
-    for course_id in applied_courses_ids:
-        cursor.execute('SELECT * FROM Courses WHERE id = %s', (course_id[0],))
-        course_details = cursor.fetchone()
-        applied_courses.append(course_details)
+    #for course_id in applied_courses_ids:
+       # cursor.execute('SELECT * FROM Courses WHERE id = %s', (course_id[0],))
+      #  course_details = cursor.fetchone()
+     #   applied_courses.append(course_details)
+
+    
 
     conn.close()
     return applied_courses
@@ -627,24 +658,26 @@ def delete_applied_course(course_id):
     user_id = session.get('user_id')
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM usercourses WHERE user_id = %s AND course_id = %s', (user_id, course_id))
+    cursor.execute('DELETE FROM UserCourses WHERE user_id = %s AND id = %s', (user_id, course_id))
+   
     conn.commit()
     conn.close()
 
+
     # Refresh the applied courses list
-    applied_courses = get_applied_courses(user_id)
+    
     applied_courses_data = get_applied_courses(user_id)
 
     total_duration_core = 0
     total_duration_soft = 0
     
     for course in applied_courses_data:
-        if course[6] == 'Core':
+        if course[5] == 'Core':
             total_duration_core += course[3]
-        elif course[6] == 'Soft':
+        elif course[5] == 'Soft':
             total_duration_soft += course[3]
 
-    return render_template('TrainingHours/training.html', applied_courses=applied_courses,total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
+    return render_template('TrainingHours/training.html', applied_courses=applied_courses_data,total_duration_core=total_duration_core, total_duration_soft=total_duration_soft)
 
 @app.route('/traininghours', methods=['GET'])
 def training_hours():
@@ -652,13 +685,14 @@ def training_hours():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = %s', (user_id,))
-   
+    #cursor.execute('SELECT course_id FROM UserCourses WHERE user_id = %s', (user_id,))
+    cursor.execute('SELECT * FROM UserCourses WHERE user_id = %s', (user_id,))
     # Fetch all the results and create a list of course IDs
-    applied_courses_ids = cursor.fetchall()
+    applied_courses = cursor.fetchall()
 
     # Retrieve the applied courses data
     applied_courses_data = get_applied_courses(user_id)
+
 
     #Fetch department Id and the required hours
     department_id = session.get('user_department')
@@ -677,9 +711,9 @@ def training_hours():
         total_required_soft = (soft_skills_percentage/100) * default_total_hours
 
         for course in applied_courses_data:
-            if course[6] == 'Core':
+            if course[5] == 'Core':
                 total_duration_core += course[3]
-            elif course[6] == 'Soft':
+            elif course[5] == 'Soft':
                 total_duration_soft += course[3]
 
         required_core = total_required_core - total_duration_core
@@ -691,28 +725,37 @@ def training_hours():
         total_duration_core = 0
         total_duration_soft = 0
         for course in applied_courses_data:
-            if course[6] == 'Core':
+            if course[5] == 'Core':
                 total_duration_core += course[3]
-            elif course[6] == 'Soft':
+            elif course[5] == 'Soft':
                 total_duration_soft += course[3]
     
 
 
-
     # Retrieve the course details for the applied course IDs
-    applied_courses = []
+   # applied_courses = []
     
-    for course_id in applied_courses_ids:
-        cursor.execute('SELECT * FROM Courses WHERE id = %s', (course_id[0],))
-        course_details = cursor.fetchone()
-        applied_courses.append(course_details)
+    #for course_id in applied_courses_ids:
+      #  cursor.execute('SELECT * FROM UserCourses WHERE id = %s', (user_id[0],))
+      #  course_details = cursor.fetchone()
+       # applied_courses.append(course_details)
 
     conn.close()
 
     return render_template('TrainingHours/training.html', applied_courses=applied_courses, total_duration_core=total_duration_core, total_duration_soft=total_duration_soft, required_core=required_core,
                        required_soft=required_soft)
 
-
+#attendance page
+@app.route('/attendance')
+def display_courses_by_id():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM UserCourses')
+    courses = cursor.fetchall()
+    
+    conn.close()
+    
+    return render_template('Courses/attendance.html', courses=courses)
 
 #### GRAPHS && DASHBOARD ####
 #### FOR STAFF - VIEW OWN TRAINING COURSES ####

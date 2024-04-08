@@ -5,8 +5,17 @@
 
 <div id="navigation_full" class="w-64 h-screen fixed hidden" style="background-color: #323A47; z-index:10000;">
     <ul class="space-y-1">
+        <!--instructor-->
+        {% if session['user_role'] == 'instructor' %}
+        <li>
+            <a href="/attendance" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Attendance taking</span>
+            </a>
+        </li>
+
+
         <!-- STAFF -->
-        {% if session['user_role'] == 'staff' %}
+        {% elif session['user_role'] == 'staff' %}
             <li>
                 <a href="/dashboard" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
                     <span class="text-md font-small">Dashboard</span>
@@ -62,7 +71,7 @@
                 <span class="text-md font-small">Add Courses</span>
             </a>
         </li>
-
+        
       
 
         <!-- HR SUPERIOR -->

@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS Courses (
     name TEXT,
     description TEXT,
     duration INTEGER,
-    instructor TEXT,
-    start_date DATE,
-    course_type TEXT
+    start_date TEXT,
+    course_type TEXT,
+    FOREIGN KEY (instructor) REFERENCES User(name)
 );
 
 -- Create UserCourses table
@@ -53,8 +53,10 @@ CREATE TABLE IF NOT EXISTS UserCourses (
     duration INTEGER,
     course_id INTEGER,
     course_type TEXT,
+    attended BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES User(id),
-    FOREIGN KEY (course_id) REFERENCES Courses(id) ON DELETE CASCADE
+    FOREIGN KEY (course_id) REFERENCES Courses(id) ON DELETE CASCADE,
+    start_date TEXT
 );
 
 -- Create Graph table

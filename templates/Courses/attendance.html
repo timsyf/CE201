@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance taking</title>
+</head>
+<body>
+    <h1>Attendance taking</h1>
+    <form action="/submit_attendance" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Duration</th>
+                    <th>Course ID</th>
+                    <th>Course Type</th>
+                    <th>Attended</th>
+                    <th>Start Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course[0] }}</td>
+                    <td>{{ course[1] }}</td>
+                    <td>{{ course[2] }}</td>
+                    <td>{{ course[3] }}</td>
+                    <td>{{ course[4] }}</td>
+                    <td>{{ course[5] }}</td>
+                    <td>
+                        <input type="checkbox" name="attended_{{ course.id }}" {% if course.attended %} checked {% endif %}>
+                    </td>
+                    <td>{{ course[7]}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <input type="submit" value="Submit Attendance">
+    </form>
+</body>
+</html>
