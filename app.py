@@ -970,18 +970,29 @@ def completedexport():
 # review route
 @app.route('/review', methods=['GET'])
 def review():
-    user_id = session.get('user_id')
+    user_id = session['user_id']
 
     applied_course_id = get_applied_course_id(user_id)
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT c.name, c.description, c.duration, c.instructor, c.start_date, c.course_type, r.review
-        FROM straits.courses c
-        LEFT JOIN usercourses u ON c.name = u.name
-        LEFT JOIN review r ON c.id = r.course_name AND r.user_id = u.user_id
-        WHERE u.user_id = %s
-    ''', (session['user_id'],))
+    query = """
+        SELECT 
+            Courses.name AS Course_Name,
+            Courses.description AS Description,
+            Courses.duration AS Duration,
+            Courses.instructor AS Instructor,
+            Courses.start_date AS Start_Date,
+            Courses.course_type AS Course_Type,
+            review.review AS Review
+        FROM 
+            Courses
+        LEFT JOIN 
+            review ON Courses.name = review.course_name
+        WHERE
+            review.user_id = %s
+    """
+
+cursor.execute(query, (user_id,))
     courses = cursor.fetchall()
     
     conn.close()
@@ -992,16 +1003,15 @@ def review():
 # add review
 @app.route('/review/insert', methods=['POST'])
 def review_insert():
-    print(request.form)  # Add this line to inspect the form data
+    print(request.form)
     user_id = session.get('user_id')
     review = request.form['review']
-    course_name = request.form['course_name']  # Retrieve the course name from the form data
+    course_name = request.form['course_name']
    
     
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Use a single INSERT statement with multiple columns
     cursor.execute('''
         INSERT INTO review (user_id, course_name, review)  -- Include course_name in the INSERT statement
         VALUES (%s, %s, %s)

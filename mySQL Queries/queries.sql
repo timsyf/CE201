@@ -75,3 +75,8 @@ CREATE TABLE IF NOT EXISTS TrainingRequirements (
     FOREIGN KEY (department_id) REFERENCES Department(id)
 );
 
+CREATE TABLE review (
+  user_id INT,
+  review TEXT,
+  course_name TEXT
+);
