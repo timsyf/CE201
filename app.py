@@ -936,19 +936,16 @@ def staffexport():
         'User Role': [],
         'User Course ID': [],
         'User Course Name': [],
-        'User Course Duration': [],
-        'User Course Type': [],
         'Course ID': [],
         'Course Name': [],
         'Description': [],
         'Course Duration': [],
         'Instructor': [],
         'Start Date': [],
-        'Course Course Type': [],
-        'User Duration': [],
+        'Course Type': [],
         'Department ID': [],
         'Department Name': [],
-        'Default Total Hours': [],
+        'Total Hours': [],
         'Core Skills Percentage': [],
         'Soft Skills Percentage': []
     }
@@ -959,19 +956,16 @@ def staffexport():
         formatted_data['User Role'].append(row[13])
         formatted_data['User Course ID'].append(row[0])
         formatted_data['User Course Name'].append(row[2])
-        formatted_data['User Course Duration'].append(row[3])
-        formatted_data['User Course Type'].append(row[4])
         formatted_data['Course ID'].append(row[5])
         formatted_data['Course Name'].append(row[6])
         formatted_data['Description'].append(row[7])
         formatted_data['Course Duration'].append(row[8])
         formatted_data['Instructor'].append(row[9])
         formatted_data['Start Date'].append(row[10])
-        formatted_data['Course Course Type'].append(row[11])
-        formatted_data['User Duration'].append(row[14])
+        formatted_data['Course Type'].append(row[11])
         formatted_data['Department ID'].append(row[15])
         formatted_data['Department Name'].append(row[16])
-        formatted_data['Default Total Hours'].append(row[17])
+        formatted_data['Total Hours'].append(row[17])
         formatted_data['Core Skills Percentage'].append(row[18])
         formatted_data['Soft Skills Percentage'].append(row[19])
     
@@ -1029,27 +1023,31 @@ def completedexport():
     sql_query = """SELECT 
         u.id AS user_id,
         u.name AS user_name,
-        u.department_id,
+        sr.department_id,
         uc.course_type,
-        COALESCE(SUM(uc.duration), 0) AS total_duration,
-        d.default_total_hours,
-        d.core_skills_percentage,
-        d.soft_skills_percentage,
+        ROUND((COALESCE(SUM(uc.duration), 0) / sr.total_hours * 100), 2) AS total_duration_percentage,
+        sr.total_hours AS default_total_hours,
+        sr.core_skills_percentage,
+        sr.soft_skills_percentage,
         CASE 
-            WHEN uc.course_type = 'Core' AND COALESCE(SUM(uc.duration), 0) >= d.default_total_hours * d.core_skills_percentage / 100 THEN TRUE 
-            WHEN uc.course_type = 'Soft' AND COALESCE(SUM(uc.duration), 0) >= d.default_total_hours * d.soft_skills_percentage / 100 THEN TRUE 
-            ELSE FALSE 
-        END AS "Skills requirement met"
+            WHEN 
+                CASE 
+                    WHEN uc.course_type = 'Core' AND COALESCE(SUM(uc.duration), 0) >= sr.total_hours * sr.core_skills_percentage / 100 THEN 1 
+                    WHEN uc.course_type = 'Soft' AND COALESCE(SUM(uc.duration), 0) >= sr.total_hours * sr.soft_skills_percentage / 100 THEN 1 
+                    ELSE 0 
+                END = 1 THEN 'Completed' 
+            ELSE 'Incomplete' 
+        END AS "Skills requirement status"
     FROM 
         User u
     LEFT JOIN 
         UserCourses uc ON u.id = uc.user_id
     LEFT JOIN 
-        Department d ON u.department_id = d.id
+        StaffRequirement sr ON u.id = sr.user_id
     WHERE
-        u.department_id = %s
+        sr.department_id = %s
     GROUP BY 
-        u.id, u.name, u.department_id, uc.course_type, d.default_total_hours, d.core_skills_percentage, d.soft_skills_percentage;
+        u.id, u.name, sr.department_id, uc.course_type, sr.total_hours, sr.core_skills_percentage, sr.soft_skills_percentage
     """
     
     cursor.execute(sql_query, (department_id,))
