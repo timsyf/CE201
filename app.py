@@ -319,7 +319,7 @@ def delete_department(department_id):
 
     cursor.execute('SELECT id FROM User WHERE department_id = %s', (department_id,))
     if cursor.fetchone():
-        flash('Cannot delete a department with assigned users. Please reassign or remove users first.', 'error')
+        flash('Cannot delete a department with assigned Staff. Please reassign or remove Staff first.', 'error')
         return redirect(url_for('departments'))
     
     cursor.execute('DELETE FROM Department WHERE id = %s', (department_id,))
