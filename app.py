@@ -280,13 +280,22 @@ def edit_department(department_id):
     
     if request.method == 'POST':
         name = request.form['name']
-        default_total_hours = request.form['default_total_hours']
-        core_skills_percentage = request.form['core_skills_percentage']
-        soft_skills_percentage = request.form['soft_skills_percentage']
+        default_total_hours = int(request.form['default_total_hours'])
+        core_skills_percentage = int(request.form['core_skills_percentage'])
+        soft_skills_percentage = int(request.form['soft_skills_percentage'])
         
         cursor.execute('UPDATE Department SET name = %s, default_total_hours = %s, core_skills_percentage = %s, soft_skills_percentage = %s WHERE id = %s', (name, default_total_hours, core_skills_percentage, soft_skills_percentage, department_id))
+        
+        cursor.execute('''
+            UPDATE StaffRequirement JOIN User ON StaffRequirement.user_id = User.id
+            SET StaffRequirement.total_hours = %s, 
+                StaffRequirement.core_skills_percentage = %s, 
+                StaffRequirement.soft_skills_percentage = %s
+            WHERE User.department_id = %s
+        ''', (default_total_hours, core_skills_percentage, soft_skills_percentage, department_id))
+
         conn.commit()
-        flash('Department updated successfully.', 'success')
+        flash('Department and staff requirements updated successfully.', 'success')
         return redirect(url_for('departments'))
     
     cursor.execute('SELECT * FROM Department WHERE id = %s', (department_id,))
@@ -343,7 +352,7 @@ def edit_department_users(department_id):
 
     cursor.execute('SELECT * FROM User WHERE (department_id IS NULL OR department_id = 0) AND role = %s', ('staff',))
     users_without_department = cursor.fetchall()
-
+    
     cursor.close()
     conn.close()
 
@@ -361,10 +370,26 @@ def add_user_to_department():
     
     conn = get_db_connection()
     cursor = conn.cursor()
+
     cursor.execute('UPDATE User SET department_id = %s WHERE id = %s', (department_id, user_id))
+
+    cursor.execute('SELECT default_total_hours, core_skills_percentage, soft_skills_percentage FROM Department WHERE id = %s', (department_id,))
+    dept_req = cursor.fetchone()
+
+    cursor.execute('''
+        INSERT INTO StaffRequirement (user_id, department_id, total_hours, core_skills_percentage, soft_skills_percentage)
+        VALUES (%s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+        department_id = VALUES(department_id),
+        total_hours = VALUES(total_hours),
+        core_skills_percentage = VALUES(core_skills_percentage),
+        soft_skills_percentage = VALUES(soft_skills_percentage)
+    ''', (user_id, department_id, dept_req[0], dept_req[1], dept_req[2]))
+    
     conn.commit()
     cursor.close()
     conn.close()
+
     flash('User added to department successfully.', 'success')
     return redirect(url_for('edit_department_users', department_id=department_id))
 
@@ -372,19 +397,71 @@ def add_user_to_department():
 @app.route('/department/remove_user_from_department', methods=['POST'])
 def remove_user_from_department():
     user_id = request.form.get('user_id')
-    department_id = request.form.get('department_id')  
+
     if not user_id:
         flash('Missing user information.', 'error')
         return redirect(url_for('departments'))
     
     conn = get_db_connection()
     cursor = conn.cursor()
+
     cursor.execute('UPDATE User SET department_id = NULL WHERE id = %s', (user_id,))
+
+    cursor.execute('DELETE FROM StaffRequirement WHERE user_id = %s', (user_id,))
+
     conn.commit()
     cursor.close()
     conn.close()
+
     flash('User removed from department successfully.', 'success')
-    return redirect(url_for('edit_department_users', department_id=department_id))
+    return redirect(url_for('edit_department_users', department_id=request.form.get('department_id')))
+
+#Edit user requirements
+@app.route('/staff_requirement/<int:user_id>', methods=['GET', 'POST'])
+def staff_requirement(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Fetch department_id early to use it for both GET and POST methods
+    cursor.execute('''
+        SELECT User.name, Department.name AS department_name, StaffRequirement.*, Department.id AS department_id
+        FROM StaffRequirement 
+        JOIN User ON StaffRequirement.user_id = User.id 
+        LEFT JOIN Department ON StaffRequirement.department_id = Department.id 
+        WHERE StaffRequirement.user_id = %s
+    ''', (user_id,))
+    staff_req = cursor.fetchone()
+
+    if request.method == 'POST' and staff_req:
+        total_hours = request.form.get('total_hours', type=int)
+        core_skills_percentage = request.form.get('core_skills_percentage', type=int)
+        soft_skills_percentage = request.form.get('soft_skills_percentage', type=int)
+
+        # Use the department_id from staff_req, which is fetched above
+        department_id = staff_req['department_id']
+
+        cursor.execute('''
+            UPDATE StaffRequirement
+            SET total_hours = %s, core_skills_percentage = %s, soft_skills_percentage = %s
+            WHERE user_id = %s
+        ''', (total_hours, core_skills_percentage, soft_skills_percentage, user_id))
+        
+        conn.commit()
+        flash('Staff training requirements updated successfully.', 'success')
+
+        # Redirect using the fetched department_id
+        return redirect(url_for('edit_department_users', department_id=department_id))
+    
+    conn.close()
+
+    if staff_req:
+        # Use the fetched staff_req for rendering in GET request
+        return render_template('Departments/staff_requirement.html', staff_req=staff_req, department_id=staff_req['department_id'])
+    else:
+        flash('Staff requirement not found.', 'error')
+        return redirect(url_for('edit_department_users'))
+
+
 
 #View and edit HR officers 
 @app.route('/department/officers/<int:department_id>')
@@ -1013,18 +1090,29 @@ def completedexport():
 # review route
 @app.route('/review', methods=['GET'])
 def review():
-    user_id = session.get('user_id')
+    user_id = session['user_id']
 
     applied_course_id = get_applied_course_id(user_id)
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT c.name, c.description, c.duration, c.instructor, c.start_date, c.course_type, r.review
-        FROM straits.courses c
-        LEFT JOIN usercourses u ON c.name = u.name
-        LEFT JOIN review r ON c.id = r.course_name AND r.user_id = u.user_id
-        WHERE u.user_id = %s
-    ''', (session['user_id'],))
+    query = """
+        SELECT 
+            Courses.name AS Course_Name,
+            Courses.description AS Description,
+            Courses.duration AS Duration,
+            Courses.instructor AS Instructor,
+            Courses.start_date AS Start_Date,
+            Courses.course_type AS Course_Type,
+            review.review AS Review
+        FROM 
+            Courses
+        LEFT JOIN 
+            review ON Courses.name = review.course_name
+        WHERE
+            review.user_id = %s
+    """
+
+    cursor.execute(query, (user_id,))
     courses = cursor.fetchall()
     
     conn.close()
@@ -1035,16 +1123,15 @@ def review():
 # add review
 @app.route('/review/insert', methods=['POST'])
 def review_insert():
-    print(request.form)  # Add this line to inspect the form data
+    print(request.form)
     user_id = session.get('user_id')
     review = request.form['review']
-    course_name = request.form['course_name']  # Retrieve the course name from the form data
+    course_name = request.form['course_name']
    
     
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Use a single INSERT statement with multiple columns
     cursor.execute('''
         INSERT INTO review (user_id, course_name, review)  -- Include course_name in the INSERT statement
         VALUES (%s, %s, %s)

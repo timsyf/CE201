@@ -34,6 +34,18 @@ CREATE TABLE IF NOT EXISTS DepartmentHR (
     FOREIGN KEY (department_id) REFERENCES Department(id)
 );
 
+-- Create individual staff's requirement
+CREATE TABLE IF NOT EXISTS StaffRequirement (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    department_id INT,
+    total_hours INT,
+    core_skills_percentage INT,
+    soft_skills_percentage INT,
+    FOREIGN KEY (user_id) REFERENCES User(id),
+    FOREIGN KEY (department_id) REFERENCES Department(id)
+);
+
 -- Create Courses table
 CREATE TABLE IF NOT EXISTS Courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -66,7 +78,7 @@ CREATE TABLE IF NOT EXISTS Graph (
 );
 
 -- TrainingRequirements table (for user)
-CREATE TABLE IF NOT EXISTS TrainingRequirements (
+/*CREATE TABLE IF NOT EXISTS TrainingRequirements (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     department_id INT,
@@ -75,5 +87,10 @@ CREATE TABLE IF NOT EXISTS TrainingRequirements (
     soft_skills_hours INT,
     FOREIGN KEY (user_id) REFERENCES User(id),
     FOREIGN KEY (department_id) REFERENCES Department(id)
-);
+);*/
 
+CREATE TABLE review (
+  user_id INT,
+  review TEXT,
+  course_name TEXT
+);
