@@ -965,3 +965,57 @@ def completedexport():
     excel_file_path = "COMPLETEDDEPARTMENT_REPORT.xlsx"
     df.to_excel(excel_file_path, index=False)
     return send_file(excel_file_path, as_attachment=True)
+
+
+# review route
+@app.route('/review', methods=['GET'])
+def review():
+    user_id = session.get('user_id')
+
+    applied_course_id = get_applied_course_id(user_id)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT c.name, c.description, c.duration, c.instructor, c.start_date, c.course_type, r.review
+        FROM straits.courses c
+        LEFT JOIN usercourses u ON c.name = u.name
+        LEFT JOIN review r ON c.id = r.course_name AND r.user_id = u.user_id
+        WHERE u.user_id = %s
+    ''', (session['user_id'],))
+    courses = cursor.fetchall()
+    
+    course_reviews = {}  # Dictionary to store course reviews
+    
+    for course in courses:
+        # Check if review exists for the course
+        if course[6] is not None:
+            # If review exists, store it in the dictionary with course name as key
+            course_reviews[course[0]] = course[6]
+    
+    conn.close()
+    return render_template('Courses/review.html', courses=courses, applied_course_id=applied_course_id, course_reviews=course_reviews)
+
+
+
+# add review
+@app.route('/review/insert', methods=['POST'])
+def review_insert():
+    print(request.form)  # Add this line to inspect the form data
+    user_id = session.get('user_id')
+    review = request.form['review']
+    course_name = request.form['course_name']  # Retrieve the course name from the form data
+   
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Use a single INSERT statement with multiple columns
+    cursor.execute('''
+        INSERT INTO review (user_id, course_name, review)  -- Include course_name in the INSERT statement
+        VALUES (%s, %s, %s)
+    ''', (user_id, course_name, review))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('courses'))
