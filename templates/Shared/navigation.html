@@ -47,7 +47,7 @@
         <!-- HR SUPERIOR -->
         {% elif session['user_role'] == 'hr_supervisor' %}
         <li>
-            <a href="/dashboard" class="group flex items-center justify-between bg-gray-100 px-4 py-2 text-gray-700">
+            <a href="/dashboard" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
                 <span class="text-md font-small">Dashboard</span>
             </a>
         </li>
@@ -79,7 +79,7 @@
         <!-- HR OFFICER -->
         {% elif session['user_role'] == 'hr_officer' %}
         <li>
-            <a href="/dashboard" class="group flex items-center justify-between bg-gray-100 px-4 py-2 text-gray-700">
+            <a href="/dashboard" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
                 <span class="text-md font-small">Dashboard</span>
             </a>
         </li>

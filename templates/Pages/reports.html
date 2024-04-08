@@ -37,7 +37,7 @@
 
                 <div id="form1" class="form-container">
                     <h2 class="text-lg font-bold mb-4">Staff Information</h2>
-                    <form action="/staffexport" method="post" class="max-w-md">
+                    <form action="/staffexport" method="post" class="w-full">
                         <div class="mb-4">
                             <label for="userId" class="py-2 block text-sm font-medium text-gray-700">Staffs</label>
                             <select id="user_id" name="user_id" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -73,11 +73,11 @@
                   
                 <div id="form3" class="form-container">
                     <h2 class="text-lg font-bold mb-4">Department Completion Information</h2>
-                    <form action="/completedexport" method="post" class="max-w-md">
+                    <form action="/completedexport" method="post" class="w-full">
                         <div class="mb-4">
                             <label for="departmentId" class="py-2 block text-sm font-medium text-gray-700">Departments</label>
                             <select id="department_id" name="department_id" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="">Select a user</option>
+                                <option value="">Select a department</option>
                                 {% for option in dropdown_options_departments %}
                                 <option value='{{ option.id }}'>{{ option.name }}</option>
                                 {% endfor %}

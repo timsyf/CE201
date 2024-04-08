@@ -1061,7 +1061,7 @@ def completedexport():
         'Name': [],
         'Department ID': [],
         'Course Type': [],
-        'Total Duration': [],
+        'Total Duration Percentage': [],
         'Default Total Hours': [],
         'Core Skills Percentage': [],
         'Soft Skills Percentage': [],
