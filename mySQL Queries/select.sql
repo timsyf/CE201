@@ -1,0 +1,4 @@
+-- SELECT * FROM straits.courses;
+-- SELECT * FROM straits.usercourses;
+-- SELECT * FROM straits.graph;
+-- SELECT * FROM straits.user;

@@ -1,60 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
+{% if 'user_id' in session %}
+<div id="toggle_nav" style="position: absolute; top: 12px; left: 12px;">
+    <img src="https://cdn.vectorstock.com/i/preview-1x/91/81/menu-icon-vector-16849181.jpg" style="width: 40px;border-radius:5px;" alt="Image description">
+</div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CE201</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-</head>
+<div id="navigation_full" class="w-64 h-screen fixed hidden" style="background-color: #323A47; z-index:10000;">
+    <ul class="space-y-1">
+        <!-- STAFF -->
+        {% if session['user_role'] == 'staff' %}
+            <li>
+                <a href="/dashboard" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                    <span class="text-md font-small">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/profile" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                    <span class="text-md font-small">Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="/traininghours" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                    <span class="text-md font-small">Training Hours</span>
+                </a>
+            </li>
+            <li>
+                <a href="/courses" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                    <span class="text-md font-small">Courses</span>
+                </a>
+            </li>
 
-<body class="bg-gray-100">
-    <nav class="bg-blue-500 p-4">
-        <ul class="flex space-x-4">
-            <li><a href="/" class="text-white hover:text-gray-300">Home</a></li>
-            {% if 'user_id' in session %}
-                {% if session['user_role'] == 'staff' %}
-                <li><a href="/profile" class="text-white hover:text-gray-300">Profile</a></li>
-                <li><a href="/traininghours" class="text-white hover:text-gray-300">Training Hours</a></li>
-                <li><a href="/courses" class="text-white hover:text-gray-300">Courses</a></li>
-                {% elif session['user_role'] == 'hr_supervisor' %}
-                <li><a href="/profile" class="text-white hover:text-gray-300">Profile</a></li>
-                <li><a href="" class="text-white hover:text-gray-300">Departments</a></li>
-                <li><a href="/courses" class="text-white hover:text-gray-300">Courses</a></li>
-                {% elif session['user_role'] == 'hr_officer' %}
-                <li><a href="/profile" class="text-white hover:text-gray-300">Profile</a></li>
-                <li><a href="" class="text-white hover:text-gray-300">Departments</a></li>
-                <li class="relative" style="z-index:1;">
-                    <a href="" class="text-white hover:text-gray-300 dropdown-trigger">Reports</a>
-                    <div class="absolute hidden bg-white shadow-md mt-4 dropdown-menu">
-                        <a href="" class="block px-8 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white">Department Report</a>
-                        <a href="" class="block px-8 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white border-t border-gray-100">User Report</a>
-                    </div>
-                </li>  
-                {% endif %}
-                <li><a href="/logout" class="text-white hover:text-gray-300">Logout</a></li>
-            {% else %}    
-            <li><a href="/login" class="text-white hover:text-gray-300">Login</a></li>
-            <li><a href="/register" class="text-white hover:text-gray-300">Register</a></li>
-            {% endif %}        
-        </ul>
-    </nav>
-    <script>
-        document.querySelectorAll('.dropdown-trigger').forEach(function(trigger) {
-            trigger.addEventListener('click', function(event) {
-                event.preventDefault();
-                var dropdown = this.nextElementSibling;
-                while (dropdown) {
-                    if (dropdown.classList.contains('dropdown-menu')) {
-                        dropdown.classList.toggle('hidden');
-                        break;
-                    }
-                    dropdown = dropdown.nextElementSibling;
-                }
-            });
-        });
-    </script>
+            <li>
+                <a href="/review" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                    <span class="text-md font-small">Review</span>
+                </a>
+            </li>
+        <!-- STAFF -->
+
+        <!-- HR SUPERIOR -->
+        {% elif session['user_role'] == 'hr_supervisor' %}
+        <li>
+            <a href="/dashboard" class="group flex items-center justify-between bg-gray-100 px-4 py-2 text-gray-700">
+                <span class="text-md font-small">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/profile" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Profile</span>
+            </a>
+        </li>
+        <li>
+            <a href="/departments" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Departments</span>
+            </a>
+        </li>
+        <li>
+            <a href="/courses" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Courses</span>
+            </a>
+        </li>
+        <li>
+            <a href="/addcourse" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Add Courses</span>
+            </a>
+        </li>
+
+      
+
+        <!-- HR SUPERIOR -->
+
+        <!-- HR OFFICER -->
+        {% elif session['user_role'] == 'hr_officer' %}
+        <li>
+            <a href="/dashboard" class="group flex items-center justify-between bg-gray-100 px-4 py-2 text-gray-700">
+                <span class="text-md font-small">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/profile" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Profile</span>
+            </a>
+        </li>
+        <li>
+            <a href="/departments" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Departments</span>
+            </a>
+        </li>
+        <li>
+            <a href="/reports" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Reports</span>
+            </a>
+        </li>
+
+      
+
+        <!-- HR OFFICER -->
+        {% endif %}
+        <li>
+            <a href="/logout" class="group flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <span class="text-md font-small">Sign Out</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<script>
+    var navigation_full = document.getElementById('navigation_full');
+    var button = document.getElementById('toggle_nav');
     
-</body>
+    button.addEventListener('mouseover', function() {
+        if (navigation_full.classList.contains('hidden')) {
+            navigation_full.classList.remove('hidden');
+            button.classList.add('hidden');
+        }
+    });
+    
+    navigation_full.addEventListener('mouseover', function() {
+        if (navigation_full.classList.contains('hidden')) {
+            navigation_full.classList.remove('hidden');
+            button.classList.add('hidden');
+        }
+    });
 
-</html>
+    navigation_full.addEventListener('mouseout', function() {
+        if (!navigation_full.classList.contains('hidden')) {
+            navigation_full.classList.add('hidden');
+            button.classList.remove('hidden');
+        }
+    });
+</script>
+{% endif %}

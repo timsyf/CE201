@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+</head>
+
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        {% include 'Shared/navigation.html' %}
+
+        <div class="w-full overflow-x-auto">
+            <div class="w-2/3 h-96 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6 overflow-y-auto">
+
+                <div class="relative mb-4">
+                    <select id="courseSelect" onchange="toggleCourseDiv()" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="newest_course_week">Newest Courses (This Week)</option>
+                        <option value="newest_course_month">Newest Courses (This Month)</option>
+                        <option value="newest_course_year">Newest Courses (This Year)</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div id="newest_course_week" class="overflow-x-auto course-container">
+                    <h1 class="text-xl font-bold mb-4">Newest Courses (1 Week)</h1>
+                    <table class="w-full whitespace-nowrap">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Type</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for course in get_newest_courses_1_week_graph %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[1] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[2] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[3] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[4] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[5] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[6] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div id="newest_course_month" class="overflow-x-auto course-container hidden">
+                    <h1 class="text-xl font-bold mb-4">Newest Courses (1 Month)</h1>
+                    <table class="w-full whitespace-nowrap">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Type</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for course in get_newest_courses_1_month_graph %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[1] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[2] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[3] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[4] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[5] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[6] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="newest_course_year" class="overflow-x-auto course-container hidden">
+                    <h1 class="text-xl font-bold mb-4">Newest Courses (1 Year)</h1>
+                    <table class="w-full whitespace-nowrap">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Type</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for course in get_newest_courses_1_year_graph %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[1] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[2] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[3] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[4] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[5] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ course[6] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="w-1/3 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6">
+                {{ training_hours_graph | safe }} <!-- Own training hours -->
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleCourseDiv() {
+            var selectElement = document.getElementById("courseSelect");
+            var selectedValue = selectElement.value;
+            
+            var divs = document.getElementsByClassName("course-container");
+            for (var i = 0; i < divs.length; i++) {
+                divs[i].classList.add("hidden");
+            }
+            
+            var selectedDiv = document.getElementById(selectedValue);
+            selectedDiv.classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>

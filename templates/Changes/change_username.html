@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Change Username</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+</head>
+
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        {% include 'Shared/navigation.html' %}
+        
+        <div class="flex flex-col items-center w-full mt-12">
+            <div class="w-3/4 lg:w-1/2 bg-white shadow-md rounded-lg overflow-hidden">
+                <div class="bg-blue-500 text-white text-lg font-bold py-4 px-6">
+                    Change Username
+                </div>
+                <div class="p-6">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="{{ 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative' if category == 'error' else 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative' }}" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <form method="POST" action="{{ url_for('change_username') }}">
+                        <div class="mb-4">
+                            <label for="new_username" class="block text-gray-700 text-sm font-bold mb-2">
+                                New Username:
+                            </label>
+                            <input type="text" id="new_username" name="new_username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter new username">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Change Username
+                            </button>
+                            <a href="{{ url_for('profile') }}" class="inline-block align-middle text-center select-none border font-bold whitespace-no-wrap py-2 px-4 rounded text-base leading-normal no-underline text-blue-500 bg-white hover:bg-blue-50">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
