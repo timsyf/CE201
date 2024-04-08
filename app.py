@@ -984,16 +984,8 @@ def review():
     ''', (session['user_id'],))
     courses = cursor.fetchall()
     
-    course_reviews = {}  # Dictionary to store course reviews
-    
-    for course in courses:
-        # Check if review exists for the course
-        if course[6] is not None:
-            # If review exists, store it in the dictionary with course name as key
-            course_reviews[course[0]] = course[6]
-    
     conn.close()
-    return render_template('Courses/review.html', courses=courses, applied_course_id=applied_course_id, course_reviews=course_reviews)
+    return render_template('Courses/review.html', courses=courses, applied_course_id=applied_course_id)
 
 
 
@@ -1018,4 +1010,4 @@ def review_insert():
     conn.commit()
     conn.close()
 
-    return redirect(url_for('courses'))
+    return redirect(url_for('review'))
