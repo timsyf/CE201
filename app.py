@@ -104,20 +104,117 @@ def logout():
 # Profile Route
 @app.route('/profile')
 def profile():
-    if 'user_id' in session:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute('SELECT name, role FROM User WHERE id = %s', (session['user_id'],))
-        user_data = cursor.fetchone()
-        conn.close()
-
-        if user_data:
-            return render_template('User/profile.html', username=user_data[0], role=user_data[1])
-        else:
-            return 'User not found', 404
-    else:
+    if 'user_id' not in session:
         return redirect(url_for('index'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute('SELECT name, role, department_id FROM User WHERE id = %s', (session['user_id'],))
+    user_data = cursor.fetchone()
+
+    roles = {
+        'staff': 'Staff',
+        'hr_officer': 'HR Officer',
+        'hr_supervisor': 'HR Supervisor'
+    }
+    display_role = roles.get(user_data['role'], 'Unknown Role')
+
+    department_name = None
+    hr_officers = []
+    staff_list = []
+    assigned_departments = []
+
+    if user_data['role'] == 'staff':
+        cursor.execute('SELECT name FROM Department WHERE id = %s', (user_data['department_id'],))
+        department = cursor.fetchone()
+        department_name = department['name'] if department else 'Not Assigned'
+
+        cursor.execute('SELECT User.name FROM User JOIN DepartmentHR ON User.id = DepartmentHR.user_id WHERE DepartmentHR.department_id = %s AND User.role = "hr_officer"', (user_data['department_id'],))
+        hr_officers = cursor.fetchall()
+
+        cursor.execute('SELECT name FROM User WHERE department_id = %s AND role = "staff"', (user_data['department_id'],))
+        staff_list = cursor.fetchall()
+
+    elif user_data['role'] == 'hr_officer':
+        cursor.execute('SELECT Department.name FROM DepartmentHR JOIN Department ON DepartmentHR.department_id = Department.id WHERE DepartmentHR.user_id = %s', (session['user_id'],))
+        assigned_departments = cursor.fetchall()
+
+    elif user_data['role'] == 'hr_supervisor':
+        pass
+
+    conn.close()
+
+    return render_template('User/profile.html', 
+                           username=user_data['name'], 
+                           role=display_role, 
+                           department_name=department_name, 
+                           hr_officers=hr_officers, 
+                           staff_list=staff_list, 
+                           assigned_departments=assigned_departments)
+
+#Change Username
+@app.route('/change_username', methods=['GET', 'POST'])
+def change_username():
+    if 'user_id' not in session:
+        flash('You need to login first.', 'error')
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        new_username = request.form.get('new_username')
+        if not new_username:
+            flash('Please enter a new username.', 'error')
+            return redirect(url_for('change_username'))
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT id FROM User WHERE name = %s', (new_username,))
+        if cursor.fetchone():
+            flash('This username is already taken. Please choose a different one.', 'error')
+            conn.close()
+            return redirect(url_for('change_username'))
+
+        cursor.execute('UPDATE User SET name = %s WHERE id = %s', (new_username, session['user_id']))
+        conn.commit()
+        conn.close()
+        flash('Your username has been updated successfully.', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('Changes/change_username.html')
+
+#Change password
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_new_password = request.form['confirm_new_password']
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute('SELECT password_hash FROM User WHERE id = %s', (session['user_id'],))
+        user = cursor.fetchone()
+
+        if not check_password_hash(user['password_hash'], current_password):
+            flash('Current password is incorrect', 'error')
+            return redirect(url_for('change_password'))
+
+        if new_password != confirm_new_password:
+            flash("New passwords don't match", 'error')
+            return redirect(url_for('change_password'))
+
+        new_password_hash = generate_password_hash(new_password)
+        cursor.execute('UPDATE User SET password_hash = %s WHERE id = %s', (new_password_hash, session['user_id']))
+        conn.commit()
+
+        flash('Password successfully updated', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('Changes/change_password.html')
 
 ###Departments###
 #View and edit Departments
@@ -125,21 +222,35 @@ def profile():
 def departments():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    query = '''
-    SELECT Department.*,
-           COUNT(DISTINCT u.id) AS user_count,
-           (SELECT COUNT(DISTINCT dh.user_id) 
-            FROM DepartmentHR dh
-            WHERE dh.department_id = Department.id) AS hr_officer_count
-    FROM Department
-    LEFT JOIN User AS u ON Department.id = u.department_id AND u.role = "staff"
-    GROUP BY Department.id;
-    '''
+    
+    if session['user_role'] == 'hr_supervisor':
+        query = '''
+        SELECT Department.*,
+               COUNT(DISTINCT u1.id) AS user_count,
+               COUNT(DISTINCT DepartmentHR.user_id) AS hr_officer_count
+        FROM Department
+        LEFT JOIN User AS u1 ON Department.id = u1.department_id AND u1.role = "staff"
+        LEFT JOIN DepartmentHR ON Department.id = DepartmentHR.department_id
+        GROUP BY Department.id;
+        '''
+    elif session['user_role'] == 'hr_officer':
+        query = '''
+        SELECT Department.*,
+               COUNT(DISTINCT u1.id) AS user_count
+        FROM Department
+        INNER JOIN DepartmentHR ON Department.id = DepartmentHR.department_id
+        LEFT JOIN User AS u1 ON Department.id = u1.department_id AND u1.role = "staff"
+        WHERE DepartmentHR.user_id = %s
+        GROUP BY Department.id;
+        ''' % session['user_id']
+    else:
+        pass
+
     cursor.execute(query)
     departments = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template('Departments/departments.html', departments=departments)
+    return render_template('Departments/departments.html', departments=departments, user_role=session['user_role'])
 
 #Add Department
 @app.route('/department/add', methods=['GET', 'POST'])

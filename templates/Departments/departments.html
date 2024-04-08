@@ -40,7 +40,9 @@
                             <th class="py-2 px-4 border">Core Skills (%)</th>
                             <th class="py-2 px-4 border">Soft Skills (%)</th>
                             <th class="py-2 px-4 border">Staff in Department</th>
+                            {% if user_role == 'hr_supervisor' %}
                             <th class="py-2 px-4 border">HR Officers assigned</th>
+                            {% endif %}
                             <th class="py-2 px-4 border w-32">Actions</th>
                         </tr>
                     </thead>
@@ -54,9 +56,11 @@
                                 <td class="py-2 px-4 border text-center align-middle">
                                     <a href="{{ url_for('edit_department_users', department_id=department.id) }}" class="text-blue-500 underline hover:text-blue-700">{{ department.user_count }}</a>
                                 </td>
+                                {% if user_role == 'hr_supervisor' %}
                                 <td class="py-2 px-4 border text-center align-middle">
                                     <a href="{{ url_for('department_officers', department_id=department.id) }}" class="text-blue-500 underline hover:text-blue-700">{{ department.hr_officer_count }}</a>
                                 </td>
+                                {% endif %}
                                 <td class="py-2 px-4 border text-center align-middle">
                                     <a href="{{ url_for('edit_department', department_id=department.id) }}" class="w-32 inline-block px-4 py-2 border borderlue-500 text-sm font-medium rounded-md text-blue-500 bg-transparent hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Edit</a>
                                     <form action="{{ url_for('delete_department', department_id=department.id) }}" method="post" class="inline" onsubmit="return confirm('Are you sure you want to delete this department?');">
