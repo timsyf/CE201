@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Staff Training Requirement</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        {% include 'Shared/navigation.html' %}
+
+        <div class="w-full overflow-x-auto">
+            <div class="w-4/5 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6" style="min-width: 1000px;">
+                <h1 class="text-2xl font-bold mb-4">Staff Training Requirement</h1>
+                <div class="bg-white p-8 rounded-md shadow-md">
+                    <form action="{{ url_for('staff_requirement', user_id=staff_req['user_id']) }}" method="POST" class="flex flex-col space-y-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Staff Name:</label>
+                            <div class="py-2 px-3 text-gray-700">{{ staff_req['name'] }}</div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Department:</label>
+                            <div class="py-2 px-3 text-gray-700">{{ staff_req['department_name'] }}</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="default_total_hours" class="block text-sm font-medium text-gray-700">Total Training Hours</label>
+                            <input type="number" id="default_total_hours" name="total_hours" value="{{ staff_req['total_hours'] }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div class="flex justify-between space-x-4">
+                            <div class="mb-4 w-full">
+                                <label for="skills_slider" class="block text-sm font-medium text-gray-700">Adjust Skills Balance</label>
+                                <input type="range" id="skills_slider" name="core_skills_percentage" min="0" max="100" value="{{ staff_req['core_skills_percentage'] }}" class="slider w-full" oninput="document.getElementById('core_skills_label').textContent = this.value + '% Core Skills'; document.getElementById('soft_skills_label').textContent = (100 - this.value) + '% Soft Skills'; document.getElementById('soft_skills_percentage').value = 100 - this.value;">
+                                <div class="flex justify-between">
+                                    <span id="core_skills_label">{{ staff_req['core_skills_percentage'] }}% Core Skills</span>
+                                    <span id="soft_skills_label">{{ 100 - staff_req['core_skills_percentage'] }}% Soft Skills</span>
+                                </div>
+                                <input type="hidden" id="soft_skills_percentage" name="soft_skills_percentage" value="{{ 100 - staff_req['core_skills_percentage'] }}">
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Update Requirements</button>
+                            <a href="{{ url_for('edit_department_users', department_id=staff_req['department_id']) }}" class="inline-block align-middle text-center select-none border font-bold whitespace-no-wrap py-2 px-4 rounded text-base leading-normal no-underline text-blue-500 bg-white hover:bg-blue-50">Back</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var slider = document.getElementById('skills_slider');
+        slider.oninput = function() {
+            var coreSkillsValue = this.value;
+            var softSkillsValue = 100 - this.value;
+            document.getElementById('core_skills_label').textContent = coreSkillsValue + '% Core Skills';
+            document.getElementById('soft_skills_label').textContent = softSkillsValue + '% Soft Skills';
+            document.getElementById('soft_skills_percentage').value = softSkillsValue;
+        };
+    </script>
+</body>
+</html>
