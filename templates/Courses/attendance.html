@@ -31,7 +31,7 @@
                     <td>{{ course[4] }}</td>
                     <td>{{ course[5] }}</td>
                     <td>
-                        <input type="checkbox" name="attended_{{ course.id }}" {% if course.attended %} checked {% endif %}>
+                        <input type="checkbox" name="{{ course[0] }}" {% if course[6] %} checked {% endif %}>
                     </td>
                     <td>{{ course[7]}}</td>
                 </tr>

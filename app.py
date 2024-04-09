@@ -585,7 +585,7 @@ def courses():
     user_id = session.get('user_id')
 
     applied_course_id = get_applied_course_id(user_id)
-    print(applied_course_id)
+    #print(applied_course_id)
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM Courses')
@@ -825,6 +825,8 @@ def training_hours():
 #attendance page
 @app.route('/attendance')
 def display_courses_by_id():
+    
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM UserCourses')
@@ -834,6 +836,38 @@ def display_courses_by_id():
     
     return render_template('Courses/attendance.html', courses=courses)
 
+#submit attendance 
+@app.route('/submit_attendance', methods=['POST']) 
+def submit_attendance():
+   
+    
+    
+    for item in request.form:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f'UPDATE UserCourses SET attended = TRUE WHERE ID = {item}')
+        conn.commit()
+        conn.close()
+    return redirect('/dashboard')
+
+#route attended course page for staffs
+@app.route('/attendedcourse', methods=['GET']) 
+def view_attendance():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    user_id = session.get('user_id')
+    attended_course_arr = []
+    applied_course_id = get_applied_course_id(user_id)
+    for courses in applied_course_id:
+        
+       
+        cursor.execute(f'SELECT * FROM UserCourses WHERE course_id = {courses} AND Attended = True AND user_id = {user_id}')
+        attended_course_arr.append(cursor.fetchall()) 
+        
+    conn.close()    
+    print(attended_course_arr)
+    return render_template('Courses/attendedcourse.html', attended_courses=attended_course_arr)
+    
 #### GRAPHS && DASHBOARD ####
 #### FOR STAFF - VIEW OWN TRAINING COURSES ####
 def training_hours():
