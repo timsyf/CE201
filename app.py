@@ -41,15 +41,22 @@ def dashboard():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        role = request.form['role']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role')
+
+        if not username or not password:
+            flash('Username and password cannot be empty.', 'error')
+            return render_template('Auth/register.html')
+
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM User WHERE name = %s', (username,))
         existing_user = cursor.fetchone()
+        
         if existing_user:
             flash('Username already exists. Please choose another one.', 'error')
+            conn.close()
             return render_template('Auth/register.html')  
 
         hashed_password = generate_password_hash(password)
@@ -57,7 +64,9 @@ def register():
         conn.commit()
         cursor.close()
         conn.close()
+        flash('Registration successful. You can now login.', 'success')
         return redirect(url_for('index'))
+    
     return render_template('Auth/register.html')
 
 # User Login Route
