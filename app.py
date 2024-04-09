@@ -257,6 +257,7 @@ def departments():
 
     cursor.execute(query)
     departments = cursor.fetchall()
+    
     cursor.close()
     conn.close()
     return render_template('Departments/departments.html', departments=departments, user_role=session['user_role'])
@@ -1116,7 +1117,7 @@ def completedexport():
         formatted_data['Name'].append(row[1])
         formatted_data['Department ID'].append(row[2])
         formatted_data['Course Type'].append(row[3])
-        formatted_data['Total Duration'].append(row[4])
+        formatted_data['Total Duration Percentage'].append(row[4])
         formatted_data['Default Total Hours'].append(row[5])
         formatted_data['Core Skills Percentage'].append(row[6])
         formatted_data['Soft Skills Percentage'].append(row[7])

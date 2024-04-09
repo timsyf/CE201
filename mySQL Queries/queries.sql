@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS User (
     password_hash TEXT,
     duration INT,
     department_id INT, 
-    FOREIGN KEY (department_id) REFERENCES Department(id)
+    FOREIGN KEY (department_id) REFERENCES Department(id),
+
 );
 
 -- Create manytomany rs between HR officers and Departments
@@ -54,6 +55,7 @@ CREATE TABLE IF NOT EXISTS Courses (
     duration INTEGER,
     start_date TEXT,
     course_type TEXT,
+    instructor TEXT
 );
 
 -- Create UserCourses table

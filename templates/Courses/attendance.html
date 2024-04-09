@@ -1,44 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Attendance taking</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
 </head>
-<body>
-    <h1>Attendance taking</h1>
-    <form action="/submit_attendance" method="post">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Duration</th>
-                    <th>Course ID</th>
-                    <th>Course Type</th>
-                    <th>Attended</th>
-                    <th>Start Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for course in courses %}
-                <tr>
-                    <td>{{ course[0] }}</td>
-                    <td>{{ course[1] }}</td>
-                    <td>{{ course[2] }}</td>
-                    <td>{{ course[3] }}</td>
-                    <td>{{ course[4] }}</td>
-                    <td>{{ course[5] }}</td>
-                    <td>
-                        <input type="checkbox" name="{{ course[0] }}" {% if course[6] %} checked {% endif %}>
-                    </td>
-                    <td>{{ course[7]}}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <input type="submit" value="Submit Attendance">
-    </form>
+
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        {% include 'Shared/navigation.html' %}
+
+        <div class="w-full overflow-x-auto">
+            <div class="w-4/5 p-4 mx-auto bg-white p-8 rounded-md shadow-md mt-6" style="min-width: 1000px;">
+                <h1 class="block text-gray-700 font-bold mb-2 text-xl text-center">Attendance taking</h1>
+                <form action="/submit_attendance" method="post">
+                    <table class="w-full table-auto mx-auto mt-4">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4 border">ID</th>
+                                <th class="py-2 px-4 border">User ID</th>
+                                <th class="py-2 px-4 border">Name</th>
+                                <th class="py-2 px-4 border">Duration (Hours)</th>
+                                <th class="py-2 px-4 border">Course ID</th>
+                                <th class="py-2 px-4 border">Course Type</th>
+                                <th class="py-2 px-4 border">Attended</th>
+                                <th class="py-2 px-4 border">Start Date</th>
+                                <th class="py-2 px-4 border w-32">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr>
+                                <td class="py-2 px-4 border">{{ course[0] }}</td>
+                                <td class="py-2 px-4 border">{{ course[1] }}</td>
+                                <td class="py-2 px-4 border">{{ course[2] }}</td>
+                                <td class="py-2 px-4 border">{{ course[3] }}</td>
+                                <td class="py-2 px-4 border">{{ course[4] }}</td>
+                                <td class="py-2 px-4 border">{{ course[5] }}</td>
+                                <td class="py-2 px-4 border text-center">
+                                    <input type="checkbox" name="{{ course[0] }}" {% if course[6] %} checked {% endif %}>
+                                </td>
+                                <td class="py-2 px-4 border">{{ course[7] }}</td>
+                                <td class="py-2 px-4 border text-center">
+                                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Mark Attendance</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>
